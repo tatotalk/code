@@ -1,160 +1,133 @@
-<script>
-  (function() {
-    'use strict';
-
-    const overlay = document.getElementById('click-overlay');
-    const statusText = document.getElementById('status-text');
-    const box = document.querySelector('.music-box');
-    let player = null;
-    let isPlaying = false;
-    let playerReady = false;
-    let soundTimeout = null;
-    let fadeInterval = null;
-    let playRequested = false;
-    let activated = false; // prevent double triggers
-
-    window.onYouTubeIframeAPIReady = function() {
-      try {
-        const playerVars = {
-          autoplay: 0,
-          mute: 0,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          disablekb: 1
-        };
-        const origin = window.location.origin;
-        if (origin && !origin.startsWith('file://')) {
-          playerVars.origin = origin;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spotify Autoplay</title>
+    <style>
+        /* Minimal, dark-themed container */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        player = new YT.Player('player', {
-          videoId: 'dPD4mSuZmvU',
-          playerVars: playerVars,
-          events: {
-            onReady: function() {
-              playerReady = true;
-              console.log('✅ Player ready.');
-              if (playRequested) startPlaySequence();
-            },
-            onError: function(e) {
-              console.warn('⚠️ Player error:', e.data);
-            }
-          }
-        });
-      } catch (err) {
-        console.error('YouTube init failed:', err);
-      }
-    };
-
-    function fadeInVolume(targetVolume, duration) {
-      if (fadeInterval) {
-        clearInterval(fadeInterval);
-        fadeInterval = null;
-      }
-      const startTime = Date.now();
-      const startVol = 0;
-      fadeInterval = setInterval(function() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 1.5);
-        const currentVol = Math.round(startVol + (targetVolume - startVol) * eased);
-        if (player && typeof player.setVolume === 'function') {
-          player.setVolume(currentVol);
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #121212;
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
         }
-        if (progress >= 1) {
-          clearInterval(fadeInterval);
-          fadeInterval = null;
-          if (player && typeof player.setVolume === 'function') {
-            player.setVolume(targetVolume);
-          }
-          console.log('🔊 Fade-in complete.');
+        .player-wrapper {
+            width: 100%;
+            max-width: 680px;
+            background: #1e1e1e;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
-      }, 50);
-    }
-
-    function startPlaySequence() {
-      if (isPlaying || activated) return;
-      if (!player || typeof player.playVideo !== 'function') {
-        playRequested = true;
-        return;
-      }
-      try {
-        activated = true;
-        overlay.classList.add('active');
-        player.playVideo();
-        player.setVolume(0);
-        statusText.textContent = '✦ silent for 5s… ✦';
-        statusText.classList.add('active');
-
-        if (soundTimeout) clearTimeout(soundTimeout);
-        soundTimeout = setTimeout(function() {
-          if (player) {
-            try {
-              player.unMute();
-              fadeInVolume(100, 3000);
-              statusText.textContent = '✦ now playing ✦';
-            } catch (err) {
-              console.warn('Fade-in failed:', err);
-            }
-          }
-          soundTimeout = null;
-        }, 5000);
-
-        isPlaying = true;
-        playRequested = false;
-        console.log('▶️ Play sequence started.');
-      } catch (err) {
-        console.warn('Play attempt failed:', err);
-      }
-    }
-
-    // ── SCROLL TRIGGER (Intersection Observer) ──
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !activated) {
-          startPlaySequence();
-          observer.unobserve(box);
+        .player-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            color: #fff;
         }
-      });
-    }, { threshold: 0.5 });
-    observer.observe(box);
+        .spotify-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1db954;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .spotify-badge svg {
+            width: 24px;
+            height: 24px;
+            fill: #1db954;
+        }
+        .status-note {
+            margin-left: auto;
+            font-size: 12px;
+            color: #a7a7a7;
+            background: #2a2a2a;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+        .iframe-container {
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        .iframe-container iframe {
+            display: block;
+            width: 100%;
+            height: 352px;
+            border: none;
+            border-radius: 12px;
+        }
+        .player-footer {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6a6a6a;
+        }
+        .player-footer a {
+            color: #6a6a6a;
+            text-decoration: none;
+            border-bottom: 1px dotted transparent;
+            transition: 0.2s;
+        }
+        .player-footer a:hover {
+            color: #1db954;
+            border-bottom-color: #1db954;
+        }
+        @media (max-width: 560px) {
+            .player-wrapper { padding: 16px; }
+            .iframe-container iframe { height: 280px; }
+        }
+        @media (max-width: 400px) {
+            .iframe-container iframe { height: 220px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-wrapper">
+        <!-- header -->
+        <div class="player-header">
+            <span class="spotify-badge">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.36-.66.48-1.02.24-2.82-1.74-6.36-2.1-10.56-1.14-.42.12-.78-.12-.9-.54-.12-.42.12-.78.54-.9 4.56-1.02 8.46-.6 11.58 1.32.36.18.48.66.24 1.02zm1.44-3.3c-.3.42-.78.6-1.2.36-3.24-1.98-8.16-2.52-11.94-1.38-.48.12-1.02-.18-1.14-.66-.12-.48.18-1.02.66-1.14 4.26-1.26 9.6-.72 13.26 1.5.42.24.6.78.36 1.2zm.12-3.42c-.36.42-1.02.6-1.44.3-3.54-2.16-9.12-2.34-12.54-1.26-.54.18-1.14-.18-1.32-.72-.18-.54.18-1.14.72-1.32 4.02-1.26 10.14-1.02 14.22 1.38.42.24.6.84.36 1.32z"/>
+                </svg>
+                Spotify
+            </span>
+            <span class="status-note">⏵ autoplay requested</span>
+        </div>
 
-    // ── CLICK FALLBACK (always works) ──
-    overlay.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (!activated) startPlaySequence();
-    });
+        <!-- iframe with autoplay=1 -->
+        <div class="iframe-container">
+            <iframe
+                id="spotifyPlayer"
+                src="https://open.spotify.com/embed/track/7mWZIQTibWOpop4BNCGkCF?utm_source=generator&si=88667ac239a34e96&autoplay=1"
+                width="100%"
+                height="352"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+            ></iframe>
+        </div>
 
-    // ── WISPS (unchanged) ──
-    (function createWisps() {
-      const container = document.getElementById('mono-bg');
-      const count = 50;
-      for (let i = 0; i < count; i++) {
-        const wisp = document.createElement('div');
-        wisp.className = 'wisp';
-        const r = Math.random();
-        if (r < 0.5) wisp.classList.add('small');
-        else if (r < 0.85) wisp.classList.add('medium');
-        else wisp.classList.add('large');
-        wisp.style.left = (Math.random() * 100) + '%';
-        wisp.style.bottom = (5 + Math.random() * 15) + '%';
-        wisp.style.setProperty('--rise', (120 + Math.random() * 180) + 'px');
-        wisp.style.setProperty('--drift', ((Math.random() - 0.5) * 100) + 'px');
-        wisp.style.setProperty('--delay', (Math.random() * 5.0).toFixed(2) + 's');
-        container.appendChild(wisp);
-      }
-      for (let i = 0; i < 6; i++) {
-        const big = document.createElement('div');
-        big.className = 'wisp large';
-        big.style.left = (Math.random() * 100) + '%';
-        big.style.bottom = (5 + Math.random() * 12) + '%';
-        big.style.setProperty('--rise', (160 + Math.random() * 200) + 'px');
-        big.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
-        big.style.setProperty('--delay', (Math.random() * 7.0).toFixed(2) + 's');
-        container.appendChild(big);
-      }
-    })();
-
-    console.log('🌙 Music Box ready – scroll or click to start.');
-  })();
-</script>
+        <!-- footer -->
+        <div class="player-footer">
+            <span>🎵 <span style="color:#aaa;">Now playing</span> · Spotify Embed</span>
+            <a href="https://open.spotify.com/track/7mWZIQTibWOpop4BNCGkCF" target="_blank" rel="noopener">
+                open in Spotify →
+            </a>
+        </div>
+    </div>
+</body>
+</html>
