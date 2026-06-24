@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>End Screen</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0e14;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ----- PERMANENT OVERLAY (covers the video forever) ----- */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1f2b, #0a0c12);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            user-select: none;
+            /* This overlay NEVER disappears */
+        }
+
+        /* Title text */
+        #overlay h1 {
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #e8edf5;
+            text-shadow: 0 0 30px rgba(100, 150, 255, 0.15);
+            margin-bottom: 1rem;
+        }
+
+        #overlay h1 span {
+            display: inline-block;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(100, 180, 255, 0.2); }
+            50%    { text-shadow: 0 0 50px rgba(100, 180, 255, 0.6); }
+        }
+
+        /* Subtitle / status text */
+        #statusText {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-weight: 300;
+            margin-top: 0.5rem;
+            margin-bottom: 2.5rem;
+            transition: color 0.5s ease;
+        }
+
+        #statusText.playing {
+            color: rgba(100, 220, 150, 0.8);
+        }
+
+        /* ----- THE BUTTON (🔒 -> 🔐) ----- */
+        #unlockBtn {
+            font-size: 5rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            width: 180px;
+            height: 180px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+            line-height: 1;
+            background: radial-gradient(circle at 30% 30%, #2a3344, #141920);
+        }
+
+        #unlockBtn:hover {
+            transform: scale(1.06);
+            border-color: rgba(255, 215, 100, 0.6);
+            box-shadow: 0 0 80px rgba(255, 215, 100, 0.15);
+        }
+
+        #unlockBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* When unlocked, add a soft glow */
+        #unlockBtn.unlocked {
+            border-color: rgba(100, 220, 150, 0.5);
+            box-shadow: 0 0 80px rgba(100, 220, 150, 0.15);
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 60px rgba(100, 220, 150, 0.1); }
+            50%    { box-shadow: 0 0 100px rgba(100, 220, 150, 0.25); }
+        }
+
+        /* Small hint (changes after click) */
+        .hint {
+            margin-top: 2rem;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 300;
+            transition: color 0.5s ease;
+        }
+
+        .hint.playing {
+            color: rgba(100, 220, 150, 0.4);
+        }
+
+        /* ----- VIDEO CONTAINER (hidden behind overlay) ----- */
+        #videoWrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            /* Behind the overlay */
+            background: #000;
+        }
+
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+
+        #player iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 600px) {
+            #unlockBtn {
+                width: 140px;
+                height: 140px;
+                font-size: 4rem;
+            }
+            #overlay h1 {
+                font-size: clamp(2rem, 8vw, 3.5rem);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== PERMANENT OVERLAY (stays visible forever) ===== -->
+    <div id="overlay">
+        <h1>✦ visit end screen ✦</h1>
+        <div id="statusText">🔇 waiting to play</div>
+        <button id="unlockBtn" aria-label="Unlock music">🔒</button>
+        <div class="hint" id="hintText">click the lock to start</div>
+    </div>
+
+    <!-- ===== VIDEO PLAYER (hidden BEHIND the overlay) ===== -->
+    <div id="videoWrapper">
+        <div id="player"></div>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // ---------- GLOBALS ----------
+        let player;
+        let isPlaying = false;
+
+        // ---------- YOUTUBE API READY ----------
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                videoId: 'dPD4mSuZmvU',
+                playerVars: {
+                    autoplay: 0,
+                    mute: 0, // sound ready, but blocked until click
+                    controls: 0, // hide controls since we don't see it anyway
+                    modestbranding: 1,
+                    rel: 0,
+                    origin: window.location.origin
+                },
+                events: {
+                    onReady: function(event) {
+                        console.log('Player ready. Waiting for unlock.');
+                    },
+                    onError: function(event) {
+                        console.warn('YouTube player error:', event.data);
+                    }
+                }
+            });
+        }
+
+        // ---------- UNLOCK BUTTON LOGIC ----------
+        document.getElementById('unlockBtn').addEventListener('click', function(e) {
+            // Prevent double-triggering
+            if (isPlaying) return;
+
+            // 1. Change emoji: Lock -> Lock with Key
+            this.textContent = '🔐';
+            this.classList.add('unlocked');
+
+            // 2. Update status texts
+            const status = document.getElementById('statusText');
+            status.textContent = '🎵 now playing';
+            status.classList.add('playing');
+
+            const hint = document.getElementById('hintText');
+            hint.textContent = '✨ music is playing behind the screen';
+            hint.classList.add('playing');
+
+            // 3. Start the video with sound (works because of the real click)
+            if (player && typeof player.playVideo === 'function') {
+                player.playVideo();
+                player.unMute();
+                isPlaying = true;
+            } else {
+                // Fallback: retry in a moment
+                setTimeout(() => {
+                    if (player && typeof player.playVideo === 'function') {
+                        player.playVideo();
+                        player.unMute();
+                        isPlaying = true;
+                    }
+                }, 200);
+            }
+        });
+
+        // ---------- (OPTIONAL) If the user somehow clicks again, do nothing ----------
+        console.log('Page loaded. Click the 🔒 to start the music behind the screen.');
+    </script>
+
+</body>
+</html>
