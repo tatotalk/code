@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Age of Black Fire · Book One</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #c9a84c;
+            --gold-glow: rgba(201, 168, 76, 0.6);
+            --dark: #0a0a0f;
+            --text: #e8e6e3;
+            --text-dim: rgba(232, 230, 227, 0.6);
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--dark);
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            user-select: none;
+        }
+
+        /* ---------- LAYERS ---------- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at center, #1a0b1f 0%, #0a0a0f 80%);
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #story-image-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.4;
+            transition: opacity 2s ease;
+        }
+
+        /* ---------- YOUTUBE PLAYER — SUPER SMALL & NEARLY INVISIBLE ---------- */
+        #youtube-container {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            z-index: 999;
+            width: 60px;
+            height: 34px;
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0.012;
+            transition: opacity 0.4s ease;
+            border: none;
+            box-shadow: none;
+            background: transparent;
+        }
+        #youtube-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ---------- INTRO SPLASH — ZOOMED IN (cover) ---------- */
+        #intro-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0f;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.2s ease, visibility 1.2s ease;
+        }
+        #intro-splash.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        #intro-splash.exit {
+            opacity: 0;
+            visibility: hidden;
+        }
+        #intro-splash img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+        }
+        #intro-splash .splash-overlay {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: var(--text-dim);
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.8rem, 1.2vw, 1.1rem);
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 1.5s 1.5s forwards;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        }
+        #intro-splash .splash-overlay .highlight {
+            color: var(--gold);
+        }
+
+        /* ---------- CHAPTER IMAGE OVERLAYS — ZOOMED IN (cover) ---------- */
+        .chapter-image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0f;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 6s ease, visibility 6s ease;
+        }
+
+        .chapter-image-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 1.5s ease, visibility 1.5s ease;
+        }
+
+        .chapter-image-overlay.fading {
+            opacity: 0.25;
+            visibility: visible;
+            transition: opacity 6s ease, visibility 6s ease;
+        }
+
+        .chapter-image-overlay.returning {
+            opacity: 0.35;
+            visibility: visible;
+            transition: opacity 4s ease, visibility 4s ease;
+        }
+
+        .chapter-image-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+        }
+
+        .chapter-image-overlay .chapter-label {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 1.5vw, 1.4rem);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            animation: fadeUp 1.2s 0.5s forwards;
+        }
+
+        /* ---------- APP ---------- */
+        #app {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ---------- SCREENS ---------- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                visibility 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .screen.exit {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* ---------- OPENING ---------- */
+        #opening {
+            text-align: center;
+            gap: 1rem;
+            background: rgba(10, 10, 15, 0.5);
+            backdrop-filter: blur(2px);
+        }
+        #opening .subtitle {
+            font-size: clamp(0.8rem, 1.4vw, 1.3rem);
+            font-weight: 300;
+            letter-spacing: 0.6em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            opacity: 0;
+            animation: fadeUp 1.8s 0.6s forwards;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        }
+        #opening .title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: clamp(2.8rem, 9vw, 7.5rem);
+            line-height: 1.05;
+            letter-spacing: 0.06em;
+            background: linear-gradient(180deg, #f5e6b0 0%, var(--gold) 40%, #a67c2e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            animation: fadeUp 2s 0.3s forwards;
+            position: relative;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.9));
+        }
+        #opening .title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.6;
+        }
+        #opening .tagline {
+            font-size: clamp(0.7rem, 1.1vw, 1rem);
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: var(--text-dim);
+            opacity: 0;
+            animation: fadeUp 1.8s 0.9s forwards;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        }
+        .btn-enter {
+            margin-top: 1.8rem;
+            padding: 1rem 3.5rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.2vw, 1.2rem);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: rgba(10, 10, 15, 0.5);
+            backdrop-filter: blur(4px);
+            border: 2px solid var(--gold);
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            opacity: 0;
+            animation: fadeUp 1.8s 1.2s forwards;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+        }
+        .btn-enter:hover {
+            background: rgba(201, 168, 76, 0.15);
+            box-shadow: 0 0 60px rgba(201, 168, 76, 0.25);
+            transform: scale(1.03);
+            letter-spacing: 0.4em;
+        }
+        .btn-enter .pulse-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50px;
+            border: 1px solid var(--gold);
+            opacity: 0;
+            animation: pulseRing 2.5s ease-out infinite;
+        }
+        .btn-enter .pulse-ring:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        /* ---------- VISION ---------- */
+        #vision {
+            background: radial-gradient(ellipse at center, rgba(10, 10, 15, 0.9) 0%, rgba(10, 10, 15, 0.99) 100%);
+            gap: 2.5rem;
+            text-align: center;
+        }
+        #vision .eclipse-symbol {
+            width: clamp(160px, 30vw, 320px);
+            height: clamp(160px, 30vw, 320px);
+            border-radius: 50%;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.6);
+            transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        #vision .eclipse-symbol.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        #vision .eclipse-symbol .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: ringExpand 4s ease-out infinite;
+        }
+        #vision .eclipse-symbol .ring:nth-child(1) {
+            width: 60%;
+            height: 60%;
+            border-color: rgba(201, 168, 76, 0.3);
+        }
+        #vision .eclipse-symbol .ring:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            animation-delay: 1s;
+            border-color: rgba(201, 168, 76, 0.15);
+        }
+        #vision .eclipse-symbol .ring:nth-child(3) {
+            width: 100%;
+            height: 100%;
+            animation-delay: 2s;
+            border-color: rgba(201, 168, 76, 0.08);
+        }
+        #vision .eclipse-symbol .core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: 30%;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold) 0%, #a67c2e 60%, transparent 100%);
+            box-shadow: 0 0 80px var(--gold-glow), 0 0 160px rgba(201, 168, 76, 0.2);
+            animation: pulseCore 3s ease-in-out infinite;
+        }
+        #vision .vision-text {
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.5s ease;
+            max-width: 700px;
+        }
+        #vision .vision-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #vision .vision-text .highlight {
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        /* ---------- PROLOGUE ---------- */
+        #prologue {
+            background: radial-gradient(ellipse at 30% 20%, rgba(40, 20, 60, 0.7) 0%, rgba(10, 10, 15, 0.95) 70%);
+            padding: 2rem;
+            justify-content: center;
+            gap: 1rem;
+        }
+        #prologue .container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+            height: 100%;
+            justify-content: center;
+        }
+        #chapter-indicator {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+            transition: opacity 0.6s ease;
+        }
+
+        #narrator-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.8s ease;
+            width: 100%;
+            max-width: 500px;
+        }
+        #narrator-bar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #narrator-bar .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+            animation: pulseDot 1.2s ease-in-out infinite;
+        }
+        #narrator-bar .dot.paused {
+            animation: none;
+            opacity: 0.3;
+        }
+        #narrator-bar .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+        #narrator-bar .wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            height: 24px;
+        }
+        #narrator-bar .wave span {
+            display: block;
+            width: 3px;
+            background: var(--gold);
+            border-radius: 2px;
+            height: 4px;
+            animation: waveAnim 0.8s ease-in-out infinite alternate;
+        }
+        #narrator-bar .wave span:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 8px;
+        }
+        #narrator-bar .wave span:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 14px;
+        }
+        #narrator-bar .wave span:nth-child(4) {
+            animation-delay: 0.3s;
+            height: 18px;
+        }
+        #narrator-bar .wave span:nth-child(5) {
+            animation-delay: 0.4s;
+            height: 14px;
+        }
+        #narrator-bar .wave span:nth-child(6) {
+            animation-delay: 0.5s;
+            height: 8px;
+        }
+        #narrator-bar .wave span:nth-child(7) {
+            animation-delay: 0.6s;
+            height: 4px;
+        }
+        #narrator-bar .wave.paused span {
+            animation: none;
+            height: 4px !important;
+            opacity: 0.2;
+        }
+
+        #story-text {
+            font-size: clamp(0.95rem, 1.5vw, 1.3rem);
+            line-height: 1.9;
+            font-weight: 300;
+            color: var(--text);
+            text-align: left;
+            max-width: 720px;
+            width: 100%;
+            min-height: 150px;
+            padding: 0.5rem 1rem;
+            position: relative;
+            max-height: 50vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold) transparent;
+            transition: opacity 0.8s ease;
+        }
+        #story-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        #story-text::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #story-text::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 4px;
+        }
+        #story-text .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--gold);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 0.8s step-end infinite;
+        }
+        #story-text .cursor.done {
+            animation: none;
+            opacity: 0;
+        }
+
+        .btn-continue {
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 30px;
+            padding: 0.7rem 2.5rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.6s ease;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+        .btn-continue.visible {
+            opacity: 1;
+        }
+        .btn-continue:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(201, 168, 76, 0.05);
+            box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
+        }
+
+        /* ---------- INVISIBLE SKIP BUTTON ---------- */
+        #skipBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.01;
+            z-index: 999;
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+        }
+        #skipBtn:hover {
+            opacity: 0.08;
+            background: rgba(201, 168, 76, 0.15);
+        }
+        #skipBtn::after {
+            content: '⏭';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: var(--gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #skipBtn:hover::after {
+            opacity: 0.3;
+        }
+
+        /* ---------- FINAL ENDING OVERLAY — ZOOMED IN (cover) ---------- */
+        #final-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0f;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 2s ease, visibility 2s ease;
+        }
+        #final-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        #final-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+        }
+        #final-overlay .final-label {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 1.5vw, 1.4rem);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            animation: fadeUp 1.2s 0.5s forwards;
+        }
+        #final-overlay .final-sub {
+            position: absolute;
+            bottom: 7%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(0.6rem, 0.8vw, 0.8rem);
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            opacity: 0;
+            animation: fadeUp 1.2s 1s forwards;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+        }
+
+        /* ---------- MUSIC INDICATOR — more subtle ---------- */
+        #music-indicator {
+            position: fixed;
+            bottom: 6px;
+            left: 8px;
+            z-index: 999;
+            color: var(--text-dim);
+            font-size: 0.45rem;
+            letter-spacing: 0.05em;
+            opacity: 0.12;
+            font-family: 'Inter', sans-serif;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #music-indicator.active {
+            opacity: 0.2;
+        }
+        #music-indicator .vol-bar {
+            display: inline-block;
+            width: 24px;
+            height: 2px;
+            background: rgba(201, 168, 76, 0.15);
+            border-radius: 1px;
+            margin-left: 4px;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        #music-indicator .vol-bar .vol-fill {
+            height: 100%;
+            width: 20%;
+            background: var(--gold);
+            border-radius: 1px;
+            transition: width 0.5s ease;
+        }
+
+        /* ---------- ANIMATIONS ---------- */
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulseRing {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.15);
+                opacity: 0;
+            }
+        }
+        @keyframes pulseCore {
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.9;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+        }
+        @keyframes ringExpand {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0;
+            }
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+        @keyframes waveAnim {
+            0% {
+                transform: scaleY(0.3);
+            }
+            100% {
+                transform: scaleY(1);
+            }
+        }
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            #opening .title {
+                font-size: 2.8rem;
+            }
+            .btn-enter {
+                padding: 0.8rem 2rem;
+                font-size: 0.8rem;
+            }
+            #story-text {
+                font-size: 0.95rem;
+                min-height: 120px;
+                max-height: 40vh;
+            }
+            #vision .eclipse-symbol {
+                width: 140px;
+                height: 140px;
+            }
+            #intro-splash .splash-overlay {
+                bottom: 5%;
+                font-size: 0.6rem;
+            }
+            .chapter-image-overlay .chapter-label {
+                font-size: 0.7rem;
+                bottom: 8%;
+            }
+            #skipBtn {
+                bottom: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            #final-overlay .final-label {
+                font-size: 0.8rem;
+                bottom: 10%;
+            }
+            #final-overlay .final-sub {
+                font-size: 0.5rem;
+                bottom: 5%;
+            }
+            #music-indicator {
+                font-size: 0.4rem;
+                bottom: 4px;
+                left: 6px;
+            }
+            #youtube-container {
+                width: 44px;
+                height: 25px;
+                bottom: 8px;
+                right: 8px;
+            }
+        }
+        @media (max-width: 400px) {
+            #opening .title {
+                font-size: 2rem;
+            }
+            #story-text {
+                font-size: 0.85rem;
+                min-height: 100px;
+            }
+            #youtube-container {
+                width: 36px;
+                height: 20px;
+                bottom: 6px;
+                right: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== CANVASES ====== -->
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="particle-canvas"></canvas>
+    <canvas id="story-image-canvas"></canvas>
+
+    <!-- ====== MUSIC INDICATOR (ultra subtle) ====== -->
+    <div id="music-indicator">
+        <span id="musicLabel">♪</span>
+        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:20%"></span></span>
+    </div>
+
+    <!-- ====== YOUTUBE PLAYER — SUPER SMALL & NEARLY INVISIBLE ====== -->
+    <div id="youtube-container">
+        <div id="youtube-player"></div>
+    </div>
+
+    <!-- ====== INTRO SPLASH ====== -->
+    <div id="intro-splash">
+        <img src="https://64.media.tumblr.com/c710af6088d4ce8b12a213b97720b750/6c3eae6c7b210f6d-a5/s1280x1920/4011fdd00c53adf76489c6260d291e53de5416f3.pnj" alt="The Age of Black Fire" />
+        <div class="splash-overlay">
+            <span class="highlight">The Age of Black Fire</span> · Book One
+        </div>
+    </div>
+
+    <!-- ====== CHAPTER IMAGE OVERLAYS ====== -->
+    <!-- Chapter 1 -->
+    <div id="chapter-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/f16b2ab9d6e4fadc73cac4fe6b443f04/323a9977449aecc7-89/s1280x1920/fbfbc2fe082ead11a0b961161324564a7ea60774.pnj" alt="Chapter I · The Mountain of Reckoning" />
+        <div class="chapter-label">Chapter I · The Mountain of Reckoning</div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div id="chapter2-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/4bd0846f1f004c8f86c8d1d17fc1ce3f/cbc9e539fe265f0a-5f/s1280x1920/5a3a1fe256f8d471b891247349b7cfd2e1348c61.pnj" alt="Chapter II · The Burden of the Two Heirs" />
+        <div class="chapter-label">Chapter II · The Burden of the Two Heirs</div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div id="chapter3-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/ef23b73cea8d59c0e85ea761463ecfd7/23d1388c32bfad34-15/s1280x1920/ab860b890098b0460b33772ee47d470e6ff19ca5.pnj" alt="Chapter III · The Sight of Betrayal" />
+        <div class="chapter-label">Chapter III · The Sight of Betrayal</div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div id="chapter4-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/53cb3d1b34a5b86fb93fdb0e08f47b12/64f56b082c8bd8c9-75/s1280x1920/268d59f843851e90bfb358bd70bac007e03cfa5e.pnj" alt="Chapter IV · The Covenant of the Lion Turtle" />
+        <div class="chapter-label">Chapter IV · The Covenant of the Lion Turtle</div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div id="chapter5-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/7fe158ea96e7c726eed53587e0be7586/64f56b082c8bd8c9-8b/s1280x1920/398df402b415ef2a83ad2e96908fe97fce3e9dd5.pnj" alt="Chapter V · The Fracture of the Triumvirate" />
+        <div class="chapter-label">Chapter V · The Fracture of the Triumvirate</div>
+    </div>
+
+    <!-- Chapter 6 -->
+    <div id="chapter6-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/193e07a0b9cbe22f8dd080ffdf52a91e/23d1388c32bfad34-fe/s1280x1920/9de61da73879157d6bb7a1119516aa3fd7e7a88c.pnj" alt="Chapter VI · The Ashen Exile" />
+        <div class="chapter-label">Chapter VI · The Ashen Exile</div>
+    </div>
+
+    <!-- Chapter 7 -->
+    <div id="chapter7-image-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/b2a72c8d0559bb698e02986f81d6d17d/323a9977449aecc7-12/s1280x1920/0745adc0874871e81d9b1abc9609cb1db5830ece.pnj" alt="Chapter VII · The Other World" />
+        <div class="chapter-label">Chapter VII · The Other World</div>
+    </div>
+
+    <!-- ====== FINAL ENDING OVERLAY (new image, zoomed in) ====== -->
+    <div id="final-overlay">
+        <img src="https://64.media.tumblr.com/56953dcca96adfe35a5b7e9c74946646/323a9977449aecc7-b3/s1280x1920/447a07b0fa70d15357c9569125d05fc99912e9a1.pnj" alt="The Age of Black Fire · The End" />
+        <div class="final-label">✦ The End ✦</div>
+        <div class="final-sub">Book One · The Descent of Fire</div>
+    </div>
+
+    <!-- ====== APP ====== -->
+    <div id="app">
+
+        <!-- ====== OPENING ====== -->
+        <div id="opening" class="screen">
+            <div class="subtitle">Book One — The Descent of Fire</div>
+            <h1 class="title">The Age of<br />Black Fire</h1>
+            <p class="tagline">— where worlds collide and legends are forged in flame —</p>
+            <button class="btn-enter" id="btnEnter">
+                <span class="pulse-ring"></span>
+                <span class="pulse-ring"></span>
+                Enter the Story
+            </button>
+        </div>
+
+        <!-- ====== VISION ====== -->
+        <div id="vision" class="screen">
+            <div class="eclipse-symbol" id="eclipseSymbol">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="core"></div>
+            </div>
+            <p class="vision-text" id="visionText">
+                In the beginning, there was the <span class="highlight">Eclipse</span> —<br />and the fire that would change everything.
+            </p>
+        </div>
+
+        <!-- ====== PROLOGUE ====== -->
+        <div id="prologue" class="screen">
+            <div class="container">
+                <div id="chapter-indicator">Chapter I · The Mountain of Reckoning</div>
+
+                <div id="narrator-bar">
+                    <span class="dot" id="narratorDot"></span>
+                    <span class="label">Reading</span>
+                    <div class="wave" id="waveform">
+                        <span></span><span></span><span></span>
+                        <span></span><span></span><span></span>
+                        <span></span>
+                    </div>
+                </div>
+
+                <div id="story-text">
+                    <span id="prologueContent"></span>
+                    <span class="cursor" id="cursor"></span>
+                </div>
+
+                <button class="btn-continue" id="btnContinue">Continue →</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ====== INVISIBLE SKIP BUTTON ====== -->
+    <button id="skipBtn" aria-label="Skip to next chapter" title="Skip to next chapter"></button>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ======================================================================
+            // 0. YOUTUBE PLAYER — DUAL‑LAYER AUTOPLAY (API + fallback iframe)
+            // ======================================================================
+            let player = null;
+            let playerReady = false;
+            let currentVolume = 20;
+            let targetVolume = 20;
+            let fadeInterval = null;
+            let isFading = false;
+            let fallbackIframe = null;
+            let apiFallbackTimer = null;
+
+            const container = document.getElementById('youtube-container');
+            const playerDiv = document.getElementById('youtube-player');
+
+            function setPlayerVolume(vol) {
+                if (!player || !playerReady) return;
+                try {
+                    player.setVolume(Math.round(vol));
+                    currentVolume = vol;
+                    updateVolumeIndicator(vol);
+                } catch (e) {
+                    console.warn('Volume set error:', e);
+                }
+            }
+
+            function updateVolumeIndicator(vol) {
+                const fill = document.getElementById('volFill');
+                if (fill) {
+                    fill.style.width = Math.min(vol, 100) + '%';
+                }
+            }
+
+            function fadeVolume(target, duration) {
+                if (fadeInterval) {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    isFading = false;
+                }
+                if (!player || !playerReady) return;
+
+                const startVol = currentVolume;
+                const startTime = performance.now();
+                isFading = true;
+
+                fadeInterval = setInterval(() => {
+                    const elapsed = performance.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = progress < 0.5 ?
+                        2 * progress * progress :
+                        1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    const current = startVol + (target - startVol) * eased;
+                    setPlayerVolume(current);
+                    if (progress >= 1) {
+                        clearInterval(fadeInterval);
+                        fadeInterval = null;
+                        isFading = false;
+                        currentVolume = target;
+                        targetVolume = target;
+                        updateVolumeIndicator(target);
+                    }
+                }, 16);
+            }
+
+            // Duck to a very low volume (6%) when TTS starts
+            function duckVolume() {
+                if (fadeInterval) {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    isFading = false;
+                }
+                targetVolume = 6; // even lower than half (was 10)
+                if (player && playerReady) {
+                    fadeVolume(6, 1000); // smooth 1-second fade
+                }
+            }
+
+            function fadeOutMusic(duration) {
+                if (currentVolume === 0 || !player || !playerReady) return;
+                fadeVolume(0, duration || 2500);
+            }
+
+            function fadeInMusic() {
+                if (currentVolume === 20 || !player || !playerReady) return;
+                fadeVolume(20, 2000);
+            }
+
+            window.__music = {
+                duck: duckVolume,
+                fadeOut: fadeOutMusic,
+                fadeIn: fadeInMusic,
+                setVol: function(vol) {
+                    if (fadeInterval) {
+                        clearInterval(fadeInterval);
+                        fadeInterval = null;
+                        isFading = false;
+                    }
+                    targetVolume = vol;
+                    if (player && playerReady) setPlayerVolume(vol);
+                },
+                isFading: () => isFading
+            };
+
+            // ---- Fallback iframe ----
+            function createFallbackIframe() {
+                if (fallbackIframe) return;
+                fallbackIframe = document.createElement('iframe');
+                fallbackIframe.src =
+                    'https://www.youtube.com/embed/UIam8zl4af8?autoplay=1&mute=1&loop=1&playlist=UIam8zl4af8&controls=0&disablekb=1&modestbranding=1&iv_load_policy=3&playsinline=1';
+                fallbackIframe.allow = 'autoplay; encrypted-media';
+                fallbackIframe.style.width = '100%';
+                fallbackIframe.style.height = '100%';
+                fallbackIframe.style.border = 'none';
+                container.innerHTML = '';
+                container.appendChild(fallbackIframe);
+                console.log('🎵 Fallback iframe injected (muted autoplay).');
+                playerReady = true;
+                document.getElementById('music-indicator').classList.add('active');
+                updateVolumeIndicator(20);
+            }
+
+            // ---- API attempt ----
+            function loadYouTubeAPI() {
+                if (document.getElementById('youtube-api')) return;
+                const tag = document.createElement('script');
+                tag.id = 'youtube-api';
+                tag.src = 'https://www.youtube.com/iframe_api';
+                tag.async = true;
+                tag.defer = true;
+                document.head.appendChild(tag);
+            }
+
+            window.onYouTubeIframeAPIReady = function() {
+                if (fallbackIframe) return;
+                clearTimeout(apiFallbackTimer);
+                player = new YT.Player('youtube-player', {
+                    height: '34',
+                    width: '60',
+                    videoId: 'UIam8zl4af8',
+                    playerVars: {
+                        autoplay: 1,
+                        loop: 1,
+                        playlist: 'UIam8zl4af8',
+                        controls: 0,
+                        showinfo: 0,
+                        rel: 0,
+                        modestbranding: 1,
+                        iv_load_policy: 3,
+                        disablekb: 1,
+                        mute: 1
+                    },
+                    events: {
+                        onReady: function(event) {
+                            playerReady = true;
+                            event.target.setVolume(20);
+                            currentVolume = 20;
+                            targetVolume = 20;
+                            updateVolumeIndicator(20);
+                            document.getElementById('music-indicator').classList.add('active');
+                            const iframe = container.querySelector('iframe');
+                            if (iframe) {
+                                iframe.allow = 'autoplay; encrypted-media';
+                            }
+                            event.target.playVideo();
+                            console.log('🎵 YouTube API player ready (muted).');
+                        },
+                        onStateChange: function(event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                player.playVideo();
+                            }
+                        },
+                        onError: function(event) {
+                            console.warn('YouTube API error:', event.data);
+                            if (!fallbackIframe) {
+                                createFallbackIframe();
+                            }
+                        }
+                    }
+                });
+            };
+
+            function startAPITimer() {
+                apiFallbackTimer = setTimeout(() => {
+                    if (!playerReady && !fallbackIframe) {
+                        console.warn('YouTube API timed out, using fallback iframe.');
+                        createFallbackIframe();
+                    }
+                }, 3000);
+            }
+
+            loadYouTubeAPI();
+            startAPITimer();
+
+            function ensureAudioPlayback() {
+                if (fallbackIframe) {
+                    console.log('🎵 Fallback iframe is playing muted (cannot unmute).');
+                    return;
+                }
+                if (!player || !playerReady) return;
+                try {
+                    player.unMute();
+                    player.setVolume(20);
+                    currentVolume = 20;
+                    targetVolume = 20;
+                    updateVolumeIndicator(20);
+                    player.playVideo();
+                    console.log('🎵 Audio unmuted and playing.');
+                } catch (e) {
+                    console.warn('Unmute error:', e);
+                }
+            }
+
+            // ======================================================================
+            // 1. STORY DATA
+            // ======================================================================
+            const CHAPTERS = [{
+                id: 'mountain',
+                title: 'Chapter I · The Mountain of Reckoning',
+                text: `The saga begins in the white‑hot center of a cataclysmic misunderstanding. Historically recorded as the "Public Beginning," this moment is the jagged pivot where an act of desperate salvation was rebranded as an international war crime.
+
+        The First Dragon Rider's descent down the frozen mountain was a frantic race against biological entropy. To the average observer, the white wall following him was merely an avalanche. To the Rider's expert eye, the truth was far more terrifying: the snow churned with demonic icy hands—the "biological overflow" of the Ice Queen, a Water Variant whose exponential power compounds with every breath. The avalanche was not a weapon of malice, but a cry for help.`,
+                image: 'mountain',
+                overlayId: 'chapter-image-overlay'
+            }, {
+                id: 'heirs',
+                title: 'Chapter II · The Burden of the Two Heirs',
+                text: `As the Rider plummeted toward the shoreline, he carried the future of two distinct lineages: his son—the Son of Fire, warm to the touch—and a grey‑skinned Variant, deeply cold, the essence of the Mortal Angel. Keeping his son a secret was a strategic necessity in a world defined by Gifted Escalation. He used the infant's innate heat as a thermal battery to survive the freezing climb, choosing the weight of a secret over the boy becoming a tool of the theocratic state.`,
+                image: 'heirs',
+                overlayId: 'chapter2-image-overlay'
+            }, {
+                id: 'betrayal',
+                title: 'Chapter III · The Sight of Betrayal',
+                text: `At the base of the mountain, the Rider's legendary smile vanished. He witnessed his closest allies, the Saint of Dragons and the Wicked One, laying waste to a colony of non‑gifted refugees. The Saint, once driven by holy purpose, unleashed white lightning blades; beside him, the Wicked One used psychic energy to level homes. His friends—the symbols of global liberation—had become the monsters they once fought.`,
+                image: 'betrayal',
+                overlayId: 'chapter3-image-overlay'
+            }, {
+                id: 'turtle',
+                title: 'Chapter IV · The Covenant of the Lion Turtle',
+                text: `Reaching the shoreline, the Rider summoned an ancient lion turtle. He placed the infants on its shell, choosing the uncertainty of the sea over the guaranteed corruption of the land. In a final act of legacy, he placed his Fire Mask on one of the children—a white mask, assumed after his first dragon died. By bestowing the mask, he ensured the Artifact's survival at the cost of his own protection.`,
+                image: 'turtle',
+                overlayId: 'chapter4-image-overlay'
+            }, {
+                id: 'fracture',
+                title: 'Chapter V · The Fracture of the Triumvirate',
+                text: `The strategic stability of the world once rested upon the unity of three men: the Dragon Rider, the Saint, and the Wicked One. Their fracture was not merely personal; it was a geopolitical disaster. When the Triumvirate broke, wisdom vanished, leaving only raw power in the hands of the flawed. The Wicked One's 3rd eye awakening showed him visions of his own death by Black Fire, fueling his paranoia. He whipped up a fake blizzard, seized the Saint's mind, and buried the truth in snow and ice.`,
+                image: 'fracture',
+                overlayId: 'chapter5-image-overlay'
+            }, {
+                id: 'exile',
+                title: 'Chapter VI · The Ashen Exile',
+                text: `The sea did not claim him, though it tried. It chewed him up and spat him out upon a shore of blackened glass and twisted driftwood—a land so scarred by ancient fire that nothing grew. The First Dragon Rider, once the architect of hope, lay broken amidst the ashes of a world that had already forgotten him.
+
+        He had given everything: his name, his honor, the warmth of his own son. In return, the world gave him only the cold silence of exile. The Kingdom of Ivan had won. The narrative was sealed. He was no longer the liberator, but the monster whose dark fire had nearly consumed the continent.
+
+        Yet, as he dragged his broken body away from the tide, he felt it—a faint thrum in his chest. The Black Fire. It was not a curse, as they preached, but a birthright. It was the echo of the first flame, the spark that existed before the Eclipse. He understood now. The Wicked One's vision was not of his own death, but of his rebirth. He had to find his son. He had to find the grey-skinned child. The world had not seen the last of the Dragon Rider. It had only seen the beginning of the Age of Black Fire.`,
+                image: 'fracture',
+                overlayId: 'chapter6-image-overlay'
+            }, {
+                id: 'otherworld',
+                title: 'Chapter VII · The Other World',
+                text: `The Other World was a place of nightmares. It was an alternate reality, a hellish wasteland with a red sky, white sand, greenish‑blue water, and black leafless trees. It was the original home of dragons, and it was a place of pure survival—no love, no warmth, only rage and hunger. The air was thin and dry. The rain burned like acid. The earth was chalk‑like and unstable.
+
+        Humans who crossed over transformed. Non‑gifted died. Gifted became twisted shadows, mimicking human movements with demonic forms. The Black Fire used by gifted humans was summoned from a crater in this world, where a sleeping creature's scales produced flames that could not be extinguished.
+
+        The Dragon Kingdom possessed a stable portal to this realm, guarded by a black entity from the other side that took the shape of a human. Every kingdom had a secret Guardian from the Other World, an extreme security measure known only to the highest elite.
+
+        The 5th Artifact was not a physical object that fell to Earth. It was an Orb that floated above the clouds, containing swirling mists. It only activated when all four primary artifacts—the Mask, Trident, Glove, and Halo—were collected and synced together. The Orb granted absolute mastery over all elements and chemicals, allowing the user to turn water to ice, melt it, boil it, create steam, and shape clouds at will. This was the Mastery of Clouds.
+
+        But the true secret was that the Orb unlocked Mental Creation—the power to manifest thought into reality based on a scientific understanding of atoms. The user could only create what they understood. This was the "Living God" state that the Ascensionists had sought for centuries.
+
+        The Grandson, after his investigation, discovered that the Orb had never been used. He understood that the world did not need to be fixed; it needed to be reimagined. But to do so, he had to descend into Atlantis and unlock the power of the clouds.`,
+                image: 'turtle',
+                overlayId: 'chapter7-image-overlay'
+            }];
+
+            // ======================================================================
+            // 2. DOM REFS
+            // ======================================================================
+            const opening = document.getElementById('opening');
+            const vision = document.getElementById('vision');
+            const prologue = document.getElementById('prologue');
+            const btnEnter = document.getElementById('btnEnter');
+            const btnContinue = document.getElementById('btnContinue');
+            const skipBtn = document.getElementById('skipBtn');
+            const eclipseSymbol = document.getElementById('eclipseSymbol');
+            const visionText = document.getElementById('visionText');
+            const storyContent = document.getElementById('prologueContent');
+            const cursor = document.getElementById('cursor');
+            const narratorBar = document.getElementById('narrator-bar');
+            const narratorDot = document.getElementById('narratorDot');
+            const waveform = document.getElementById('waveform');
+            const chapterIndicator = document.getElementById('chapter-indicator');
+            const introSplash = document.getElementById('intro-splash');
+            const storyTextElement = document.getElementById('story-text');
+            const finalOverlay = document.getElementById('final-overlay');
+
+            const bgCanvas = document.getElementById('bg-canvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            const particleCanvas = document.getElementById('particle-canvas');
+            const pCtx = particleCanvas.getContext('2d');
+            const imageCanvas = document.getElementById('story-image-canvas');
+            const iCtx = imageCanvas.getContext('2d');
+
+            // ======================================================================
+            // 3. CANVAS SETUP
+            // ======================================================================
+            let W, H;
+
+            function resizeCanvases() {
+                W = window.innerWidth;
+                H = window.innerHeight;
+                [bgCanvas, particleCanvas, imageCanvas].forEach(c => {
+                    c.width = W;
+                    c.height = H;
+                });
+            }
+            window.addEventListener('resize', resizeCanvases);
+            resizeCanvases();
+
+            // ======================================================================
+            // 4. PARTICLES
+            // ======================================================================
+            let particles = [];
+
+            class Particle {
+                constructor() { this.reset(true); }
+                reset(init) {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.speedY = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.6 + 0.2;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > W) this.speedX *= -1;
+                    if (this.y < 0 || this.y > H) this.speedY *= -1;
+                }
+                draw() {
+                    pCtx.beginPath();
+                    pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    pCtx.fillStyle = `rgba(201, 168, 76, ${this.opacity})`;
+                    pCtx.fill();
+                    if (this.size > 1.2) {
+                        pCtx.shadowColor = 'rgba(201, 168, 76, 0.15)';
+                        pCtx.shadowBlur = 8;
+                        pCtx.fill();
+                        pCtx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 140; i++) particles.push(new Particle());
+            }
+            initParticles();
+
+            function drawBackground() {
+                const grad = bgCtx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.8);
+                grad.addColorStop(0, '#1a0b1f');
+                grad.addColorStop(1, '#050308');
+                bgCtx.fillStyle = grad;
+                bgCtx.fillRect(0, 0, W, H);
+            }
+
+            function drawParticles() {
+                pCtx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update();
+                    p.draw(); });
+            }
+
+            function animateCanvas() {
+                drawBackground();
+                drawParticles();
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+
+            // ======================================================================
+            // 5. STORY IMAGE RENDERER
+            // ======================================================================
+            function drawScene(type) {
+                iCtx.clearRect(0, 0, W, H);
+                iCtx.globalAlpha = 0.5;
+
+                switch (type) {
+                    case 'mountain':
+                        iCtx.fillStyle = '#2a0f1a';
+                        iCtx.beginPath();
+                        iCtx.moveTo(0, H);
+                        iCtx.lineTo(0, H * 0.6);
+                        iCtx.lineTo(W * 0.1, H * 0.3);
+                        iCtx.lineTo(W * 0.25, H * 0.5);
+                        iCtx.lineTo(W * 0.4, H * 0.15);
+                        iCtx.lineTo(W * 0.6, H * 0.4);
+                        iCtx.lineTo(W * 0.75, H * 0.2);
+                        iCtx.lineTo(W * 0.9, H * 0.45);
+                        iCtx.lineTo(W, H * 0.35);
+                        iCtx.lineTo(W, H);
+                        iCtx.closePath();
+                        iCtx.fill();
+                        iCtx.fillStyle = 'rgba(100, 180, 255, 0.15)';
+                        iCtx.beginPath();
+                        iCtx.moveTo(W * 0.1, H * 0.3);
+                        iCtx.lineTo(W * 0.15, H * 0.25);
+                        iCtx.lineTo(W * 0.2, H * 0.3);
+                        iCtx.closePath();
+                        iCtx.fill();
+                        break;
+
+                    case 'heirs': {
+                        const cx1 = W * 0.35,
+                            cy1 = H * 0.5;
+                        const cx2 = W * 0.65,
+                            cy2 = H * 0.5;
+                        const grad1 = iCtx.createRadialGradient(cx1, cy1, 0, cx1, cy1, W * 0.2);
+                        grad1.addColorStop(0, 'rgba(255, 100, 50, 0.8)');
+                        grad1.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                        iCtx.fillStyle = grad1;
+                        iCtx.beginPath();
+                        iCtx.arc(cx1, cy1, W * 0.2, 0, Math.PI * 2);
+                        iCtx.fill();
+
+                        const grad2 = iCtx.createRadialGradient(cx2, cy2, 0, cx2, cy2, W * 0.2);
+                        grad2.addColorStop(0, 'rgba(50, 150, 255, 0.8)');
+                        grad2.addColorStop(1, 'rgba(0, 50, 255, 0)');
+                        iCtx.fillStyle = grad2;
+                        iCtx.beginPath();
+                        iCtx.arc(cx2, cy2, W * 0.2, 0, Math.PI * 2);
+                        iCtx.fill();
+                        break;
+                    }
+
+                    case 'betrayal':
+                        for (let i = 0; i < 10; i++) {
+                            iCtx.strokeStyle = `rgba(200, 200, 255, ${0.2 + Math.random() * 0.3})`;
+                            iCtx.lineWidth = 2 + Math.random() * 4;
+                            iCtx.beginPath();
+                            let x = Math.random() * W,
+                                y = 0;
+                            iCtx.moveTo(x, y);
+                            while (y < H) {
+                                x += (Math.random() - 0.5) * 80;
+                                y += 20 + Math.random() * 40;
+                                iCtx.lineTo(x, y);
+                            }
+                            iCtx.stroke();
+                        }
+                        const grad3 = iCtx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.6);
+                        grad3.addColorStop(0, 'rgba(80, 0, 120, 0.3)');
+                        grad3.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        iCtx.fillStyle = grad3;
+                        iCtx.fillRect(0, 0, W, H);
+                        break;
+
+                    case 'turtle':
+                        iCtx.fillStyle = 'rgba(30, 60, 40, 0.4)';
+                        iCtx.beginPath();
+                        iCtx.ellipse(W * 0.5, H * 0.7, W * 0.4, H * 0.15, 0, 0, Math.PI * 2);
+                        iCtx.fill();
+                        iCtx.fillStyle = 'rgba(40, 80, 50, 0.6)';
+                        iCtx.beginPath();
+                        iCtx.ellipse(W * 0.5, H * 0.5, W * 0.25, H * 0.2, 0, 0, Math.PI * 2);
+                        iCtx.fill();
+                        iCtx.fillStyle = 'rgba(40, 80, 50, 0.6)';
+                        iCtx.beginPath();
+                        iCtx.ellipse(W * 0.5, H * 0.35, W * 0.1, H * 0.1, 0, 0, Math.PI * 2);
+                        iCtx.fill();
+                        break;
+
+                    case 'fracture':
+                    case 'exile':
+                        for (let i = 0; i < 3; i++) {
+                            const x = W * (0.2 + i * 0.3);
+                            iCtx.fillStyle = 'rgba(100, 100, 120, 0.3)';
+                            iCtx.fillRect(x - 10, H * 0.2, 20, H * 0.6);
+                            if (i === 1) {
+                                iCtx.fillStyle = 'rgba(200, 50, 50, 0.4)';
+                                iCtx.fillRect(x - 15, H * 0.4, 30, 10);
+                                iCtx.fillRect(x - 10, H * 0.6, 20, 10);
+                            }
+                        }
+                        break;
+
+                    case 'shard':
+                    case 'otherworld':
+                        iCtx.fillStyle = 'rgba(20, 40, 70, 0.4)';
+                        iCtx.beginPath();
+                        iCtx.rect(0, 0, W, H);
+                        iCtx.fill();
+                        for (let i = 0; i < 15; i++) {
+                            const x = Math.random() * W;
+                            const y = Math.random() * H;
+                            iCtx.fillStyle = `rgba(150, 220, 255, ${0.1 + Math.random() * 0.3})`;
+                            iCtx.shadowColor = '#3b8cff';
+                            iCtx.shadowBlur = 30;
+                            iCtx.beginPath();
+                            iCtx.moveTo(x, y);
+                            iCtx.lineTo(x + 10 + Math.random() * 30, y - 10 - Math.random() * 20);
+                            iCtx.lineTo(x + 20 + Math.random() * 40, y + 5 + Math.random() * 20);
+                            iCtx.closePath();
+                            iCtx.fill();
+                        }
+                        iCtx.shadowBlur = 0;
+                        break;
+                }
+                iCtx.globalAlpha = 1.0;
+            }
+
+            // ======================================================================
+            // 6. NARRATIVE ENGINE with auto-continue & slow music fade
+            // ======================================================================
+            let currentChapterIndex = 0;
+            let narrationComplete = false;
+            let ttsEnded = false;
+            let typeInterval = null;
+            let activeOverlay = null;
+            let overlayReturning = false;
+            let autoContinueTimer = null;
+
+            function getOverlayForChapter(index) {
+                const chapter = CHAPTERS[index];
+                if (!chapter || !chapter.overlayId) return null;
+                return document.getElementById(chapter.overlayId);
+            }
+
+            function stopTypewriter() {
+                if (typeInterval) { clearInterval(typeInterval);
+                    typeInterval = null; }
+            }
+
+            function stopNarrator() {
+                if (narratorUtterance) {
+                    try { window.speechSynthesis.cancel(); } catch (_) {}
+                    narratorUtterance = null;
+                }
+                narratorDot.classList.add('paused');
+                waveform.classList.add('paused');
+            }
+
+            let narratorUtterance = null;
+            let ttsEnabled = true;
+
+            function updateNarratorBar(progress) {
+                const dot = narratorDot;
+                const wave = waveform;
+                if (progress < 1) {
+                    dot.classList.remove('paused');
+                    wave.classList.remove('paused');
+                } else {
+                    dot.classList.add('paused');
+                    wave.classList.add('paused');
+                }
+            }
+
+            function startAutoContinue() {
+                if (autoContinueTimer) clearTimeout(autoContinueTimer);
+                btnContinue.classList.add('visible');
+                autoContinueTimer = setTimeout(() => {
+                    autoContinueTimer = null;
+                    if (narrationComplete && ttsEnded) {
+                        nextChapter();
+                    }
+                }, 5000);
+            }
+
+            function cancelAutoContinue() {
+                if (autoContinueTimer) {
+                    clearTimeout(autoContinueTimer);
+                    autoContinueTimer = null;
+                }
+            }
+
+            function speakText(text) {
+                if (!ttsEnabled || !('speechSynthesis' in window)) return;
+                try {
+                    if (narratorUtterance) {
+                        window.speechSynthesis.cancel();
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 0.85;
+                    utterance.pitch = 0.7;
+                    utterance.volume = 0.9;
+
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferred = voices.find(v =>
+                        v.name.toLowerCase().includes('david') ||
+                        v.name.toLowerCase().includes('william') ||
+                        v.name.toLowerCase().includes('daniel') ||
+                        v.lang.startsWith('en')
+                    );
+                    if (preferred) utterance.voice = preferred;
+
+                    ttsEnded = false;
+
+                    utterance.onstart = () => {
+                        narratorDot.classList.remove('paused');
+                        waveform.classList.remove('paused');
+                        if (window.__music && window.__music.duck) {
+                            window.__music.duck(); // fade to 6% smoothly
+                        }
+                    };
+                    utterance.onend = () => {
+                        narratorDot.classList.add('paused');
+                        waveform.classList.add('paused');
+                        ttsEnded = true;
+                        if (window.__music && window.__music.fadeOut) {
+                            window.__music.fadeOut(8000);
+                        }
+                        if (narrationComplete) {
+                            startAutoContinue();
+                        }
+                    };
+                    utterance.onerror = () => {
+                        narratorDot.classList.add('paused');
+                        waveform.classList.add('paused');
+                        ttsEnded = true;
+                        if (window.__music && window.__music.fadeOut) {
+                            window.__music.fadeOut(8000);
+                        }
+                        if (narrationComplete) {
+                            startAutoContinue();
+                        }
+                        ttsEnabled = false;
+                    };
+
+                    narratorUtterance = utterance;
+                    window.speechSynthesis.speak(utterance);
+                } catch (_) {
+                    ttsEnabled = false;
+                    ttsEnded = true;
+                    if (narrationComplete) {
+                        startAutoContinue();
+                    }
+                }
+            }
+
+            function loadChapter(index) {
+                const chapter = CHAPTERS[index];
+                if (!chapter) return;
+                currentChapterIndex = index;
+                chapterIndicator.textContent = chapter.title;
+
+                stopTypewriter();
+                stopNarrator();
+                cancelAutoContinue();
+                narrationComplete = false;
+                ttsEnded = false;
+                storyContent.textContent = '';
+                cursor.className = 'cursor';
+                btnContinue.classList.remove('visible');
+
+                drawScene(chapter.image);
+
+                if (window.__music && window.__music.fadeIn) {
+                    window.__music.fadeIn();
+                }
+
+                const overlay = getOverlayForChapter(index);
+                if (overlay) {
+                    overlay.classList.add('active');
+                    activeOverlay = overlay;
+                    overlayReturning = false;
+
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                        overlay.classList.add('fading');
+
+                        setTimeout(() => {
+                            storyTextElement.style.opacity = '1';
+                            startTyping(chapter.text);
+                            speakText(chapter.text);
+                        }, 400);
+                    }, 2500);
+                } else {
+                    storyTextElement.style.opacity = '1';
+                    startTyping(chapter.text);
+                    speakText(chapter.text);
+                }
+
+                narratorBar.classList.add('visible');
+            }
+
+            function startTyping(text) {
+                let charIndex = 0;
+                const total = text.length;
+
+                typeInterval = setInterval(() => {
+                    if (charIndex < text.length) {
+                        storyContent.textContent += text.charAt(charIndex);
+                        charIndex++;
+                        const progress = charIndex / total;
+                        updateNarratorBar(progress);
+                        const el = document.getElementById('story-text');
+                        el.scrollTop = el.scrollHeight;
+                    } else {
+                        clearInterval(typeInterval);
+                        typeInterval = null;
+                        cursor.className = 'cursor done';
+                        narrationComplete = true;
+                        updateNarratorBar(1);
+
+                        const overlay = getOverlayForChapter(currentChapterIndex);
+                        if (overlay && !overlayReturning) {
+                            overlayReturning = true;
+                            overlay.classList.remove('fading');
+                            setTimeout(() => {
+                                overlay.classList.add('returning');
+                            }, 300);
+                        }
+
+                        if (ttsEnded) {
+                            startAutoContinue();
+                        }
+                    }
+                }, 16);
+            }
+
+            function nextChapter() {
+                cancelAutoContinue();
+                if (currentChapterIndex >= CHAPTERS.length - 1) {
+                    finishStory();
+                    return;
+                }
+                if (activeOverlay && overlayReturning) {
+                    activeOverlay.classList.remove('returning');
+                    activeOverlay.classList.add('exit');
+                    activeOverlay = null;
+                    overlayReturning = false;
+                    setTimeout(() => {
+                        loadChapter(currentChapterIndex + 1);
+                    }, 500);
+                    return;
+                }
+                loadChapter(currentChapterIndex + 1);
+            }
+
+            function finishStory() {
+                cancelAutoContinue();
+                btnContinue.classList.remove('visible');
+                btnContinue.style.pointerEvents = 'none';
+                btnContinue.style.opacity = '0.2';
+                narratorDot.className = 'dot paused';
+                waveform.className = 'wave paused';
+
+                finalOverlay.classList.add('active');
+                storyTextElement.style.opacity = '0.3';
+
+                // Music keeps playing forever — no fade out
+                console.log('🎵 The End — music continues to loop.');
+            }
+
+            // ======================================================================
+            // 7. SCREEN MANAGEMENT
+            // ======================================================================
+            function showScreen(screen) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'exit'));
+                screen.classList.add('active');
+            }
+
+            function transitionTo(screen, delay = 0) {
+                const current = document.querySelector('.screen.active');
+                if (current) {
+                    current.classList.remove('active');
+                    current.classList.add('exit');
+                }
+                setTimeout(() => showScreen(screen), delay + 400);
+            }
+
+            // ======================================================================
+            // 8. FLOW
+            // ======================================================================
+
+            setTimeout(() => {
+                introSplash.classList.add('active');
+            }, 300);
+
+            setTimeout(() => {
+                introSplash.classList.remove('active');
+                introSplash.classList.add('exit');
+                setTimeout(() => {
+                    showScreen(opening);
+                }, 500);
+            }, 3500);
+
+            btnEnter.addEventListener('click', () => {
+                ensureAudioPlayback();
+
+                opening.classList.remove('active');
+                opening.classList.add('exit');
+
+                setTimeout(() => {
+                    showScreen(vision);
+                    setTimeout(() => eclipseSymbol.classList.add('visible'), 300);
+                    setTimeout(() => visionText.classList.add('visible'), 1200);
+
+                    setTimeout(() => {
+                        transitionTo(prologue, 400);
+                        setTimeout(() => {
+                            loadChapter(0);
+                        }, 500);
+                    }, 4500);
+                }, 500);
+            });
+
+            btnContinue.addEventListener('click', function() {
+                cancelAutoContinue();
+                nextChapter();
+            });
+
+            skipBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (narrationComplete && ttsEnded) {
+                    cancelAutoContinue();
+                    nextChapter();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    if (opening.classList.contains('active')) {
+                        e.preventDefault();
+                        btnEnter.click();
+                    } else if (prologue.classList.contains('active') && narrationComplete && ttsEnded) {
+                        e.preventDefault();
+                        cancelAutoContinue();
+                        nextChapter();
+                    }
+                }
+                if (e.key === 'Escape') {
+                    if (prologue.classList.contains('active')) {
+                        stopTypewriter();
+                        stopNarrator();
+                    }
+                }
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    if (prologue.classList.contains('active') && narrationComplete && ttsEnded) {
+                        e.preventDefault();
+                        cancelAutoContinue();
+                        nextChapter();
+                    }
+                }
+            });
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+
+            // ======================================================================
+            // 9. INIT
+            // ======================================================================
+            drawScene('mountain');
+            console.log('✦ The Age of Black Fire · Cinematic Experience Loaded ✦');
+            console.log('🎵 Images: object-fit: cover (zoomed in).');
+            console.log('🔊 TTS ducking: fades to 6% (smooth 1s), then fades to 0 over 8s after TTS ends.');
+            console.log('🎵 Final screen: music loops forever.');
+
+        })();
+    </script>
+
+</body>
+</html>
