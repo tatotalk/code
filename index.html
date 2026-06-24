@@ -1,428 +1,347 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>End Screen</title>
+<!-- ============================================================
+     BLOGGER BACKGROUND – MONOCHROME MOON + YOUTUBE MUSIC
+     Paste this into your Blogger Theme (Edit HTML)
+     ============================================================ -->
 
-  <!-- ─── YOUR MONOCHROME + MOON STYLES ─── -->
-  <style>
-    /* ─── BLOGGER WRAPPERS TRANSPARENT ─── */
-    html,
-    body {
-      background: transparent !important;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-    }
+<!-- ─── CSS – place inside <head> ─── -->
+<style>
+  /* ─── RESET & BLOGGER WRAPPERS ─── */
+  html, body {
+    background: transparent !important;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  #outer-wrapper,
+  .content-outer,
+  .main-outer,
+  .fauxborder-left,
+  .fauxborder-right,
+  .region-inner {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 
-    #outer-wrapper,
-    .content-outer,
-    .main-outer,
-    .fauxborder-left,
-    .fauxborder-right,
-    .region-inner {
-      background: transparent !important;
-      background-color: transparent !important;
-      box-shadow: none !important;
-      border: none !important;
-    }
+  /* ─── BACKGROUND LAYER (behind blog content) ─── */
+  #mono-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;                 /* behind blogger content */
+    overflow: hidden;
+    pointer-events: none;       /* lets clicks pass to blog, but we capture via document */
+    background: #0a0a0a;
+  }
 
-    /* ─── MAIN BACKGROUND (covers everything, clickable) ─── */
-    #mono-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1000; /* over the video */
-      overflow: hidden;
-      pointer-events: auto; /* clickable */
-      cursor: pointer;
-      background: #0a0a0a;
-      user-select: none;
-    }
+  /* ─── SKY ─── */
+  .sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1414 35%, #2a0a0a 70%, #3d0808 100%);
+    animation: breatheSky 14s ease-in-out infinite alternate;
+  }
+  @keyframes breatheSky {
+    0% { opacity: 0.85; }
+    100% { opacity: 1; }
+  }
 
-    /* ─── SKY ─── */
-    .sky {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, #0a0a0a 0%, #1a1414 35%, #2a0a0a 70%, #3d0808 100%);
-      animation: breatheSky 14s ease-in-out infinite alternate;
-    }
+  /* ─── MOON ─── */
+  .moon {
+    position: absolute;
+    top: 12%;
+    left: 65%;
+    width: 18vmax;
+    height: 18vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #ffffff, #b0b0b0);
+    box-shadow: 0 0 60px rgba(200,200,200,0.12), 0 0 150px rgba(150,150,150,0.06);
+    animation: floatMoon 8s ease-in-out infinite alternate;
+    filter: blur(0.5px);
+  }
+  .moon::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 30%;
+    width: 15%;
+    height: 20%;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    box-shadow: 40px 30px 0 -6px rgba(0,0,0,0.05), -20px 50px 0 -10px rgba(0,0,0,0.06);
+  }
+  @keyframes floatMoon {
+    0% { transform: translateY(0px) scale(0.95) rotate(-2deg); }
+    100% { transform: translateY(-30px) scale(1.05) rotate(3deg); }
+  }
 
-    @keyframes breatheSky {
-      0% { opacity: 0.85; }
-      100% { opacity: 1; }
-    }
+  /* ─── GROUND GLOW ─── */
+  .ground-glow {
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: radial-gradient(ellipse at 50% 100%, rgba(200,70,30,0.10), transparent 70%);
+    filter: blur(20px);
+    z-index: 0;
+  }
 
-    /* ─── MOON ─── */
-    .moon {
-      position: absolute;
-      top: 12%;
-      left: 65%;
-      width: 18vmax;
-      height: 18vmax;
-      border-radius: 50%;
-      background: radial-gradient(circle at 40% 35%, #ffffff, #b0b0b0);
-      box-shadow: 0 0 60px rgba(200, 200, 200, 0.12), 0 0 150px rgba(150, 150, 150, 0.06);
-      animation: floatMoon 8s ease-in-out infinite alternate;
-      filter: blur(0.5px);
-    }
+  /* ─── WISPS ─── */
+  .wisp {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffcc88, #dd4411 60%, #881100);
+    animation: riseWisp var(--dur, 4s) ease-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+    filter: blur(0.5px);
+    box-shadow: 0 0 8px rgba(255,120,40,0.15);
+    will-change: transform, opacity;
+  }
+  .wisp.small { width: 4px; height: 4px; --dur: 3.6s; }
+  .wisp.medium { width: 7px; height: 7px; --dur: 4.8s; }
+  .wisp.large {
+    width: 11px; height: 11px; --dur: 5.6s;
+    filter: blur(1.5px) brightness(1.3);
+    box-shadow: 0 0 16px rgba(255,150,80,0.25);
+  }
+  @keyframes riseWisp {
+    0% { transform: translateY(0px) translateX(0px) scale(0.4); opacity: 0; }
+    15% { opacity: 0.9; }
+    50% { opacity: 1; }
+    80% { opacity: 0.4; }
+    100% { transform: translateY(calc(-1 * var(--rise, 150px))) translateX(var(--drift, 25px)) scale(0.1); opacity: 0; }
+  }
 
-    .moon::after {
-      content: '';
-      position: absolute;
-      top: 20%;
-      left: 30%;
-      width: 15%;
-      height: 20%;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.06);
-      box-shadow: 40px 30px 0 -6px rgba(0, 0, 0, 0.05), -20px 50px 0 -10px rgba(0, 0, 0, 0.06);
-    }
+  /* ─── STATUS TEXT (bottom corner, very subtle) ─── */
+  #status-text {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    color: rgba(255,255,255,0.12);
+    font: 300 0.7rem/1.2 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 5;
+    transition: color 0.8s ease;
+    text-shadow: 0 0 15px rgba(0,0,0,0.9);
+  }
+  #status-text.active {
+    color: rgba(180, 200, 255, 0.35);
+  }
 
-    @keyframes floatMoon {
-      0% { transform: translateY(0px) scale(0.95) rotate(-2deg); }
-      100% { transform: translateY(-30px) scale(1.05) rotate(3deg); }
-    }
+  /* ─── VIDEO WRAPPER (hidden) ─── */
+  #video-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #player { width: 100%; height: 100%; }
+  #player iframe {
+    width: 100%; height: 100%;
+    border: none; display: block;
+  }
 
-    /* ─── GROUND GLOW ─── */
-    .ground-glow {
-      position: absolute;
-      bottom: -15px;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background: radial-gradient(ellipse at 50% 100%, rgba(200, 70, 30, 0.10), transparent 70%);
-      filter: blur(20px);
-      z-index: 0;
-    }
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .moon { width: 30vmax; height: 30vmax; top: 8%; left: 55%; }
+    .ground-glow { height: 40px; filter: blur(15px); }
+  }
+  @media (max-width: 480px) {
+    .ground-glow { height: 30px; filter: blur(10px); }
+    .wisp.large { width: 8px; height: 8px; }
+  }
+</style>
 
-    /* ─── WISP PARTICLES ─── */
-    .wisp {
-      position: absolute;
-      bottom: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #ffcc88, #dd4411 60%, #881100);
-      animation: riseWisp var(--dur, 4s) ease-out infinite;
-      animation-delay: var(--delay, 0s);
-      opacity: 0;
-      filter: blur(0.5px);
-      box-shadow: 0 0 8px rgba(255, 120, 40, 0.15);
-      will-change: transform, opacity;
-    }
-    .wisp.small {
-      width: 4px;
-      height: 4px;
-      --dur: 3.6s;
-    }
-    .wisp.medium {
-      width: 7px;
-      height: 7px;
-      --dur: 4.8s;
-    }
-    .wisp.large {
-      width: 11px;
-      height: 11px;
-      --dur: 5.6s;
-      filter: blur(1.5px) brightness(1.3);
-      box-shadow: 0 0 16px rgba(255, 150, 80, 0.25);
-    }
+<!-- ─── HTML – place right after <body> ─── -->
+<div id="mono-bg">
+  <div class="sky"></div>
+  <div class="moon"></div>
+  <div class="ground-glow"></div>
+  <div id="status-text">✦ click anywhere to begin ✦</div>
+</div>
 
-    @keyframes riseWisp {
-      0% {
-        transform: translateY(0px) translateX(0px) scale(0.4);
-        opacity: 0;
-      }
-      15% { opacity: 0.9; }
-      50% { opacity: 1; }
-      80% { opacity: 0.4; }
-      100% {
-        transform: translateY(calc(-1 * var(--rise, 150px))) translateX(var(--drift, 25px)) scale(0.1);
-        opacity: 0;
-      }
-    }
+<!-- ─── VIDEO CONTAINER ─── -->
+<div id="video-wrapper">
+  <div id="player"></div>
+</div>
 
-    /* ─── STATUS TEXT (optional feedback) ─── */
-    #status-text {
-      position: absolute;
-      bottom: 12%;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      color: rgba(255, 255, 255, 0.2);
-      font: 300 0.9rem/1.4 'Segoe UI', system-ui, sans-serif;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      pointer-events: none;
-      transition: color 0.8s ease;
-      text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-      z-index: 5;
-    }
-    #status-text.active {
-      color: rgba(200, 220, 255, 0.5);
-    }
+<!-- ─── YOUTUBE API + SCRIPTS – place before </body> ─── -->
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  (function() {
+    'use strict';
 
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 768px) {
-      .moon {
-        width: 30vmax;
-        height: 30vmax;
-        top: 8%;
-        left: 55%;
-      }
-      .ground-glow { height: 40px; filter: blur(15px); }
-    }
-    @media (max-width: 480px) {
-      .ground-glow { height: 30px; filter: blur(10px); }
-      .wisp.large { width: 8px; height: 8px; }
-    }
+    // ── DOM refs ──
+    const statusText = document.getElementById('status-text');
+    let player = null;
+    let isPlaying = false;
+    let playerReady = false;
+    let soundTimeout = null;
+    let fadeInterval = null;
 
-    /* ─── VIDEO CONTAINER (hidden behind the overlay) ─── */
-    #video-wrapper {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      background: #000;
-      opacity: 0;      /* invisible but still loads */
-      pointer-events: none;
-    }
-    #player {
-      width: 100%;
-      height: 100%;
-    }
-    #player iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    /* ─── LOADING SPINNER (optional) ─── */
-    #loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      background: #0a0a0a;
-      color: rgba(255, 255, 255, 0.2);
-      font: 300 1rem 'Segoe UI', sans-serif;
-      letter-spacing: 0.2em;
-      transition: opacity 0.6s ease;
-      pointer-events: none;
-    }
-    #loader.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    .spinner {
-      width: 30px;
-      height: 30px;
-      margin-right: 16px;
-      border: 2px solid rgba(255,255,255,0.05);
-      border-top: 2px solid rgba(255,255,255,0.25);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ─── LOADING SCREEN ─── -->
-  <div id="loader">
-    <div class="spinner"></div>
-    <span>loading atmosphere…</span>
-  </div>
-
-  <!-- ─── VIDEO PLAYER (hidden) ─── -->
-  <div id="video-wrapper">
-    <div id="player"></div>
-  </div>
-
-  <!-- ─── MONOCHROME + MOON OVERLAY (clickable) ─── -->
-  <div id="mono-bg">
-    <div class="sky"></div>
-    <div class="moon"></div>
-    <div class="ground-glow"></div>
-    <div id="status-text">✦ click anywhere to begin ✦</div>
-  </div>
-
-  <!-- ─── YOUTUBE IFRAME API ─── -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-
-  <script>
-    (function() {
-      // ── DOM refs ──
-      const overlay = document.getElementById('mono-bg');
-      const statusText = document.getElementById('status-text');
-      const loader = document.getElementById('loader');
-      let player = null;
-      let isPlaying = false;
-      let playerReady = false;
-      let soundTimeout = null;
-
-      // ── Helper to hide loader ──
-      function hideLoader() {
-        loader.classList.add('hidden');
-      }
-      setTimeout(hideLoader, 3000); // safety
-
-      // ── YouTube API ready ──
-      window.onYouTubeIframeAPIReady = function() {
-        try {
-          const playerVars = {
-            autoplay: 0,
-            mute: 0,
-            controls: 0,
-            modestbranding: 1,
-            rel: 0,
-            disablekb: 1
-          };
-          const origin = window.location.origin;
-          if (origin && !origin.startsWith('file://')) {
-            playerVars.origin = origin;
-          }
-
-          player = new YT.Player('player', {
-            videoId: 'dPD4mSuZmvU',
-            playerVars: playerVars,
-            events: {
-              onReady: function() {
-                playerReady = true;
-                hideLoader();
-                console.log('✅ Player ready.');
-              },
-              onError: function(e) {
-                console.warn('⚠️ Player error:', e.data);
-                hideLoader();
-              }
-            }
-          });
-        } catch (err) {
-          console.error('YouTube init failed:', err);
-          hideLoader();
+    // ── YouTube API ready ──
+    window.onYouTubeIframeAPIReady = function() {
+      try {
+        const playerVars = {
+          autoplay: 0,
+          mute: 0,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          disablekb: 1
+        };
+        const origin = window.location.origin;
+        if (origin && !origin.startsWith('file://')) {
+          playerVars.origin = origin;
         }
-      };
 
-      // ── Click on overlay → start music with 5‑second silent lead ──
-      overlay.addEventListener('click', function startMusic(e) {
-        if (isPlaying) return;
+        player = new YT.Player('player', {
+          videoId: 'dPD4mSuZmvU',
+          playerVars: playerVars,
+          events: {
+            onReady: function() {
+              playerReady = true;
+              console.log('✅ Player ready.');
+              // If user already clicked, start the sequence now
+              if (playRequested) {
+                startPlaySequence();
+              }
+            },
+            onError: function(e) {
+              console.warn('⚠️ Player error:', e.data);
+            }
+          }
+        });
+      } catch (err) {
+        console.error('YouTube init failed:', err);
+      }
+    };
 
-        // Update status
-        statusText.textContent = '✦ silent for 5 seconds… ✦';
+    // ── Fade-in function (0 → targetVolume over duration ms) ──
+    function fadeInVolume(targetVolume, duration) {
+      if (fadeInterval) {
+        clearInterval(fadeInterval);
+        fadeInterval = null;
+      }
+      const startTime = Date.now();
+      const startVol = 0;
+      fadeInterval = setInterval(function() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // cubic ease-out for a smooth ramp
+        const eased = 1 - Math.pow(1 - progress, 1.5);
+        const currentVol = Math.round(startVol + (targetVolume - startVol) * eased);
+        if (player && typeof player.setVolume === 'function') {
+          player.setVolume(currentVol);
+        }
+        if (progress >= 1) {
+          clearInterval(fadeInterval);
+          fadeInterval = null;
+          if (player && typeof player.setVolume === 'function') {
+            player.setVolume(targetVolume);
+          }
+          console.log('🔊 Fade-in complete.');
+        }
+      }, 50);
+    }
+
+    // ── Start the music (5s silent, then fade in) ──
+    function startPlaySequence() {
+      if (isPlaying) return;
+      if (!player || typeof player.playVideo !== 'function') {
+        // Player not ready – queue for later
+        playRequested = true;
+        return;
+      }
+
+      try {
+        // Play immediately, set volume to 0
+        player.playVideo();
+        player.setVolume(0);
+        statusText.textContent = '✦ silent for 5s… ✦';
         statusText.classList.add('active');
 
-        if (player && typeof player.playVideo === 'function') {
-          try {
-            // Play and set volume to 0
-            player.playVideo();
-            player.setVolume(0);
+        // Clear any previous timers
+        if (soundTimeout) {
+          clearTimeout(soundTimeout);
+          soundTimeout = null;
+        }
 
-            // Clear any previous timer
-            if (soundTimeout) {
-              clearTimeout(soundTimeout);
-              soundTimeout = null;
+        // Wait 5 seconds, then fade in over 3 seconds
+        soundTimeout = setTimeout(function() {
+          if (player) {
+            try {
+              player.unMute();
+              fadeInVolume(100, 3000); // 100% volume over 3 seconds
+              statusText.textContent = '✦ now playing ✦';
+            } catch (err) {
+              console.warn('Fade-in failed:', err);
             }
-
-            // After 5 seconds, unmute and set volume to 100%
-            soundTimeout = setTimeout(function() {
-              if (player && typeof player.setVolume === 'function') {
-                try {
-                  player.unMute();
-                  player.setVolume(100);
-                  statusText.textContent = '✦ now playing ✦';
-                  console.log('🔊 Sound on.');
-                } catch (err) {
-                  console.warn('Volume ramp failed:', err);
-                }
-              }
-              soundTimeout = null;
-            }, 5000);
-
-            isPlaying = true;
-            // Remove click listener to avoid re-triggering
-            overlay.removeEventListener('click', startMusic);
-
-          } catch (err) {
-            console.warn('Play attempt failed:', err);
           }
-        } else {
-          // Retry if player not ready
-          setTimeout(function() {
-            if (player && typeof player.playVideo === 'function') {
-              try {
-                player.playVideo();
-                player.setVolume(0);
-                soundTimeout = setTimeout(function() {
-                  if (player && typeof player.setVolume === 'function') {
-                    player.unMute();
-                    player.setVolume(100);
-                    statusText.textContent = '✦ now playing ✦';
-                  }
-                  soundTimeout = null;
-                }, 5000);
-                isPlaying = true;
-                overlay.removeEventListener('click', startMusic);
-              } catch (err) {
-                console.warn('Retry play failed:', err);
-              }
-            }
-          }, 300);
-        }
+          soundTimeout = null;
+        }, 5000);
 
-        hideLoader();
-      });
+        isPlaying = true;
+        playRequested = false;
+        console.log('▶️ Play sequence started (5s silence → 3s fade).');
 
-      // ── Fallback: hide loader after 5s anyway ──
-      setTimeout(hideLoader, 5000);
+      } catch (err) {
+        console.warn('Play attempt failed:', err);
+      }
+    }
 
-      // ── Generate wisps (your code, simplified) ──
-      (function createWisps() {
-        const container = document.getElementById('mono-bg');
-        const count = 50;
-        for (let i = 0; i < count; i++) {
-          const wisp = document.createElement('div');
-          wisp.className = 'wisp';
-          const r = Math.random();
-          if (r < 0.5) wisp.classList.add('small');
-          else if (r < 0.85) wisp.classList.add('medium');
-          else wisp.classList.add('large');
-          wisp.style.left = (Math.random() * 100) + '%';
-          wisp.style.bottom = (5 + Math.random() * 15) + '%';
-          wisp.style.setProperty('--rise', (120 + Math.random() * 180) + 'px');
-          wisp.style.setProperty('--drift', ((Math.random() - 0.5) * 100) + 'px');
-          wisp.style.setProperty('--delay', (Math.random() * 5.0).toFixed(2) + 's');
-          container.appendChild(wisp);
-        }
-        // extra large
-        for (let i = 0; i < 6; i++) {
-          const big = document.createElement('div');
-          big.className = 'wisp large';
-          big.style.left = (Math.random() * 100) + '%';
-          big.style.bottom = (5 + Math.random() * 12) + '%';
-          big.style.setProperty('--rise', (160 + Math.random() * 200) + 'px');
-          big.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
-          big.style.setProperty('--delay', (Math.random() * 7.0).toFixed(2) + 's');
-          container.appendChild(big);
-        }
-      })();
+    // ── Global click listener (starts music on ANY click) ──
+    let playRequested = false;
+    document.addEventListener('click', function startOnClick(e) {
+      // Ignore clicks on the status text or background if we want, but fine.
+      if (!isPlaying) {
+        startPlaySequence();
+      }
+    });
 
-      console.log('🌙 Page ready – click the screen to start the music (sound after 5s).');
+    // ── Generate wisps (background particles) ──
+    (function createWisps() {
+      const container = document.getElementById('mono-bg');
+      const count = 50;
+      for (let i = 0; i < count; i++) {
+        const wisp = document.createElement('div');
+        wisp.className = 'wisp';
+        const r = Math.random();
+        if (r < 0.5) wisp.classList.add('small');
+        else if (r < 0.85) wisp.classList.add('medium');
+        else wisp.classList.add('large');
+        wisp.style.left = (Math.random() * 100) + '%';
+        wisp.style.bottom = (5 + Math.random() * 15) + '%';
+        wisp.style.setProperty('--rise', (120 + Math.random() * 180) + 'px');
+        wisp.style.setProperty('--drift', ((Math.random() - 0.5) * 100) + 'px');
+        wisp.style.setProperty('--delay', (Math.random() * 5.0).toFixed(2) + 's');
+        container.appendChild(wisp);
+      }
+      for (let i = 0; i < 6; i++) {
+        const big = document.createElement('div');
+        big.className = 'wisp large';
+        big.style.left = (Math.random() * 100) + '%';
+        big.style.bottom = (5 + Math.random() * 12) + '%';
+        big.style.setProperty('--rise', (160 + Math.random() * 200) + 'px');
+        big.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
+        big.style.setProperty('--delay', (Math.random() * 7.0).toFixed(2) + 's');
+        container.appendChild(big);
+      }
     })();
-  </script>
-</body>
-</html>
+
+    console.log('🌙 Blogger background ready – click anywhere to start music (5s silence → fade in).');
+  })();
+</script>
