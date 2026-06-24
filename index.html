@@ -3,96 +3,134 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Play with Sound</title>
+    <title>Force Sound (Impossible)</title>
     <style>
-        /* Center the player and style the overlay */
-        .player-wrapper {
+        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111; }
+        .wrapper {
             position: relative;
             width: 560px;
             max-width: 100%;
-            height: 315px;
+            aspect-ratio: 16 / 9;
             cursor: pointer;
+            background: #000;
         }
         #player {
             width: 100%;
             height: 100%;
         }
-        .play-overlay {
+        /* This overlay catches the first click to start sound */
+        .click-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.0); /* fully transparent, but captures clicks */
+            z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 4rem;
+            font-size: 3rem;
             font-family: Arial, sans-serif;
-            pointer-events: none; /* let clicks pass to the wrapper */
-            transition: opacity 0.3s ease;
-            border-radius: 8px;
+            pointer-events: auto;
+            transition: opacity 0.5s;
         }
-        .play-overlay span {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px 30px;
-            border-radius: 60px;
+        .click-overlay:hover {
+            background: rgba(0,0,0,0.2);
+        }
+        .click-overlay span {
+            background: rgba(0,0,0,0.6);
+            padding: 16px 32px;
+            border-radius: 50px;
+            border: 2px solid white;
             pointer-events: none;
         }
-        .play-overlay.hidden {
+        .click-overlay.hidden {
             opacity: 0;
             pointer-events: none;
+        }
+        .note {
+            color: #ff6b6b;
+            font-family: monospace;
+            text-align: center;
+            margin-top: 20px;
+            max-width: 560px;
         }
     </style>
 </head>
 <body>
-
-    <div class="player-wrapper" id="playerWrapper">
-        <div id="player"></div>
-        <div class="play-overlay" id="playOverlay">
-            <span>▶</span>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="wrapper" id="wrapper">
+            <div id="player"></div>
+            <div class="click-overlay" id="overlay">
+                <span>▶ CLICK TO PLAY WITH SOUND</span>
+            </div>
+        </div>
+        <div class="note">
+            ⚠️ The video <strong>will NOT</strong> autoplay with sound. <br>
+            Click the video above – that is the <em>only</em> way to start audio.
         </div>
     </div>
 
-    <!-- Load the YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
-
     <script>
         let player;
+        let forceAttempts = 0;
 
-        // This function is called automatically by the API when it's ready
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 videoId: 'dPD4mSuZmvU',
                 playerVars: {
-                    autoplay: 0,      // don't autoplay on load
-                    mute: 0,          // start unmuted (sound on)
+                    autoplay: 0,       // we will manually try to play
+                    mute: 0,           // start with sound UNMUTED
                     controls: 1,
                     modestbranding: 1,
                     rel: 0
                 },
                 events: {
                     onReady: function(event) {
-                        // When the player is ready, we can set up the click handler
-                        const wrapper = document.getElementById('playerWrapper');
-                        const overlay = document.getElementById('playOverlay');
+                        // --- ATTEMPT TO FORCE PLAY WITH SOUND ---
+                        // This WILL be blocked by the browser.
+                        player.playVideo(); // First attempt
 
-                        wrapper.addEventListener('click', function() {
-                            // Play the video with sound (it will start because of user gesture)
+                        // Try again after a tiny delay (still blocked)
+                        setTimeout(() => {
                             player.playVideo();
-                            // Hide the overlay
+                        }, 500);
+
+                        // Try again after 2 seconds (still blocked)
+                        setTimeout(() => {
+                            player.playVideo();
+                        }, 2000);
+
+                        // Overlay click handler: THIS WORKS because it's a user gesture
+                        const overlay = document.getElementById('overlay');
+                        overlay.addEventListener('click', function() {
+                            player.playVideo();   // plays with sound
                             overlay.classList.add('hidden');
+                        });
+
+                        // Also if they click anywhere else on the wrapper
+                        document.getElementById('wrapper').addEventListener('click', function(e) {
+                            if (e.target === this || e.target.id === 'player') {
+                                player.playVideo();
+                                overlay.classList.add('hidden');
+                            }
                         });
                     },
                     onStateChange: function(event) {
-                        // If the video ends or is paused, you could show the overlay again if needed
-                        // but we'll keep it simple.
+                        // If the video somehow starts, hide overlay
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            document.getElementById('overlay').classList.add('hidden');
+                        }
                     }
                 }
             });
         }
-    </script>
 
+        // Fallback: if the API doesn't load, try to force via iframe src (but this also fails)
+        // This is just a safety net.
+    </script>
 </body>
 </html>
