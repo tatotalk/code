@@ -70,25 +70,21 @@
             transition: opacity 2s ease;
         }
 
-        /* ---------- YOUTUBE PLAYER — SUPER SMALL & NEARLY INVISIBLE ---------- */
+        /* ---------- YOUTUBE PLAYER — HIDDEN ---------- */
         #youtube-container {
             position: fixed;
-            bottom: 12px;
-            right: 12px;
-            z-index: 999;
-            width: 60px;
-            height: 34px;
-            border-radius: 4px;
+            bottom: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
             overflow: hidden;
-            opacity: 0.012;
-            transition: opacity 0.4s ease;
-            border: none;
-            box-shadow: none;
-            background: transparent;
+            z-index: 999;
         }
         #youtube-container iframe {
-            width: 100%;
-            height: 100%;
+            width: 1px;
+            height: 1px;
             border: none;
         }
 
@@ -581,7 +577,7 @@
             box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
         }
 
-        /* ---------- INVISIBLE SKIP BUTTON ---------- */
+        /* ---------- SKIP BUTTON (slightly more visible) ---------- */
         #skipBtn {
             position: fixed;
             bottom: 30px;
@@ -591,29 +587,24 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            opacity: 0.01;
+            opacity: 0.08;
             z-index: 999;
             border-radius: 50%;
             transition: opacity 0.3s ease;
+            color: var(--gold);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
         }
         #skipBtn:hover {
-            opacity: 0.08;
+            opacity: 0.5;
             background: rgba(201, 168, 76, 0.15);
         }
         #skipBtn::after {
             content: '⏭';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            color: var(--gold);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        #skipBtn:hover::after {
-            opacity: 0.3;
+            opacity: 0.8;
         }
 
         /* ---------- FINAL ENDING OVERLAY — ZOOMED IN (cover) ---------- */
@@ -674,7 +665,7 @@
             text-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
         }
 
-        /* ---------- MUSIC INDICATOR — more subtle ---------- */
+        /* ---------- MUSIC INDICATOR — minimal ---------- */
         #music-indicator {
             position: fixed;
             bottom: 6px;
@@ -701,9 +692,9 @@
             vertical-align: middle;
             overflow: hidden;
         }
-        #music-indicator .vol-bar .vol-fill {
+        #music-indicator .vol-fill {
             height: 100%;
-            width: 20%;
+            width: 100%;
             background: var(--gold);
             border-radius: 1px;
             transition: width 0.5s ease;
@@ -811,6 +802,7 @@
                 right: 15px;
                 width: 40px;
                 height: 40px;
+                font-size: 1.2rem;
             }
             #final-overlay .final-label {
                 font-size: 0.8rem;
@@ -825,12 +817,6 @@
                 bottom: 4px;
                 left: 6px;
             }
-            #youtube-container {
-                width: 44px;
-                height: 25px;
-                bottom: 8px;
-                right: 8px;
-            }
         }
         @media (max-width: 400px) {
             #opening .title {
@@ -839,12 +825,6 @@
             #story-text {
                 font-size: 0.85rem;
                 min-height: 100px;
-            }
-            #youtube-container {
-                width: 36px;
-                height: 20px;
-                bottom: 6px;
-                right: 6px;
             }
         }
     </style>
@@ -856,13 +836,13 @@
     <canvas id="particle-canvas"></canvas>
     <canvas id="story-image-canvas"></canvas>
 
-    <!-- ====== MUSIC INDICATOR (ultra subtle) ====== -->
+    <!-- ====== MUSIC INDICATOR ====== -->
     <div id="music-indicator">
         <span id="musicLabel">♪</span>
-        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:20%"></span></span>
+        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:100%"></span></span>
     </div>
 
-    <!-- ====== YOUTUBE PLAYER — SUPER SMALL & NEARLY INVISIBLE ====== -->
+    <!-- ====== YOUTUBE PLAYER — HIDDEN ====== -->
     <div id="youtube-container">
         <div id="youtube-player"></div>
     </div>
@@ -875,50 +855,33 @@
         </div>
     </div>
 
-    <!-- ====== CHAPTER IMAGE OVERLAYS ====== -->
-    <!-- Chapter 1 -->
-    <div id="chapter-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/f16b2ab9d6e4fadc73cac4fe6b443f04/323a9977449aecc7-89/s1280x1920/fbfbc2fe082ead11a0b961161324564a7ea60774.pnj" alt="Chapter I · The Mountain of Reckoning" />
-        <div class="chapter-label">Chapter I · The Mountain of Reckoning</div>
+    <!-- ====== CHAPTER IMAGE OVERLAYS (one per part) ====== -->
+    <div id="part1-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/f16b2ab9d6e4fadc73cac4fe6b443f04/323a9977449aecc7-89/s1280x1920/fbfbc2fe082ead11a0b961161324564a7ea60774.pnj" alt="Part One · The Catastrophic Descent" />
+        <div class="chapter-label">Part One · The Catastrophic Descent</div>
+    </div>
+    <div id="part2-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/4bd0846f1f004c8f86c8d1d17fc1ce3f/cbc9e539fe265f0a-5f/s1280x1920/5a3a1fe256f8d471b891247349b7cfd2e1348c61.pnj" alt="Part Two · The Vision of Betrayal" />
+        <div class="chapter-label">Part Two · The Vision of Betrayal</div>
+    </div>
+    <div id="part3-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/ef23b73cea8d59c0e85ea761463ecfd7/23d1388c32bfad34-15/s1280x1920/ab860b890098b0460b33772ee47d470e6ff19ca5.pnj" alt="Part Three · The Hand‑off at the Misty Shore" />
+        <div class="chapter-label">Part Three · The Hand‑off at the Misty Shore</div>
+    </div>
+    <div id="part4-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/53cb3d1b34a5b86fb93fdb0e08f47b12/64f56b082c8bd8c9-75/s1280x1920/268d59f843851e90bfb358bd70bac007e03cfa5e.pnj" alt="Part Four · The Watcher's Hesitation" />
+        <div class="chapter-label">Part Four · The Watcher's Hesitation</div>
+    </div>
+    <div id="part5-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/7fe158ea96e7c726eed53587e0be7586/64f56b082c8bd8c9-8b/s1280x1920/398df402b415ef2a83ad2e96908fe97fce3e9dd5.pnj" alt="Part Five · The Blue Fire Sacrifice" />
+        <div class="chapter-label">Part Five · The Blue Fire Sacrifice</div>
+    </div>
+    <div id="part6-overlay" class="chapter-image-overlay">
+        <img src="https://64.media.tumblr.com/193e07a0b9cbe22f8dd080ffdf52a91e/23d1388c32bfad34-fe/s1280x1920/9de61da73879157d6bb7a1119516aa3fd7e7a88c.pnj" alt="Part Six · The Hard Cut (The Aftermath)" />
+        <div class="chapter-label">Part Six · The Hard Cut (The Aftermath)</div>
     </div>
 
-    <!-- Chapter 2 -->
-    <div id="chapter2-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/4bd0846f1f004c8f86c8d1d17fc1ce3f/cbc9e539fe265f0a-5f/s1280x1920/5a3a1fe256f8d471b891247349b7cfd2e1348c61.pnj" alt="Chapter II · The Burden of the Two Heirs" />
-        <div class="chapter-label">Chapter II · The Burden of the Two Heirs</div>
-    </div>
-
-    <!-- Chapter 3 -->
-    <div id="chapter3-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/ef23b73cea8d59c0e85ea761463ecfd7/23d1388c32bfad34-15/s1280x1920/ab860b890098b0460b33772ee47d470e6ff19ca5.pnj" alt="Chapter III · The Sight of Betrayal" />
-        <div class="chapter-label">Chapter III · The Sight of Betrayal</div>
-    </div>
-
-    <!-- Chapter 4 -->
-    <div id="chapter4-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/53cb3d1b34a5b86fb93fdb0e08f47b12/64f56b082c8bd8c9-75/s1280x1920/268d59f843851e90bfb358bd70bac007e03cfa5e.pnj" alt="Chapter IV · The Covenant of the Lion Turtle" />
-        <div class="chapter-label">Chapter IV · The Covenant of the Lion Turtle</div>
-    </div>
-
-    <!-- Chapter 5 -->
-    <div id="chapter5-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/7fe158ea96e7c726eed53587e0be7586/64f56b082c8bd8c9-8b/s1280x1920/398df402b415ef2a83ad2e96908fe97fce3e9dd5.pnj" alt="Chapter V · The Fracture of the Triumvirate" />
-        <div class="chapter-label">Chapter V · The Fracture of the Triumvirate</div>
-    </div>
-
-    <!-- Chapter 6 -->
-    <div id="chapter6-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/193e07a0b9cbe22f8dd080ffdf52a91e/23d1388c32bfad34-fe/s1280x1920/9de61da73879157d6bb7a1119516aa3fd7e7a88c.pnj" alt="Chapter VI · The Ashen Exile" />
-        <div class="chapter-label">Chapter VI · The Ashen Exile</div>
-    </div>
-
-    <!-- Chapter 7 -->
-    <div id="chapter7-image-overlay" class="chapter-image-overlay">
-        <img src="https://64.media.tumblr.com/b2a72c8d0559bb698e02986f81d6d17d/323a9977449aecc7-12/s1280x1920/0745adc0874871e81d9b1abc9609cb1db5830ece.pnj" alt="Chapter VII · The Other World" />
-        <div class="chapter-label">Chapter VII · The Other World</div>
-    </div>
-
-    <!-- ====== FINAL ENDING OVERLAY (new image, zoomed in) ====== -->
+    <!-- ====== FINAL ENDING OVERLAY ====== -->
     <div id="final-overlay">
         <img src="https://64.media.tumblr.com/56953dcca96adfe35a5b7e9c74946646/323a9977449aecc7-b3/s1280x1920/447a07b0fa70d15357c9569125d05fc99912e9a1.pnj" alt="The Age of Black Fire · The End" />
         <div class="final-label">✦ The End ✦</div>
@@ -956,7 +919,7 @@
         <!-- ====== PROLOGUE ====== -->
         <div id="prologue" class="screen">
             <div class="container">
-                <div id="chapter-indicator">Chapter I · The Mountain of Reckoning</div>
+                <div id="chapter-indicator">Chapter 1 · The Descent</div>
 
                 <div id="narrator-bar">
                     <span class="dot" id="narratorDot"></span>
@@ -979,34 +942,83 @@
 
     </div>
 
-    <!-- ====== INVISIBLE SKIP BUTTON ====== -->
-    <button id="skipBtn" aria-label="Skip to next chapter" title="Skip to next chapter"></button>
+    <!-- ====== SKIP BUTTON ====== -->
+    <button id="skipBtn" aria-label="Skip to next part" title="Skip to next part"></button>
 
     <script>
         (function() {
             'use strict';
 
             // ======================================================================
-            // 0. YOUTUBE PLAYER — DUAL‑LAYER AUTOPLAY (API + fallback iframe)
+            // 0. YOUTUBE AUDIO ENGINE (IFrame Player API)
             // ======================================================================
+
+            const VIDEO_ID = 'dPD4mSuZmvU';
             let player = null;
             let playerReady = false;
-            let currentVolume = 20;
-            let targetVolume = 20;
+            let currentVolume = 100;
+            let targetVolume = 100;
             let fadeInterval = null;
-            let isFading = false;
-            let fallbackIframe = null;
-            let apiFallbackTimer = null;
 
-            const container = document.getElementById('youtube-container');
-            const playerDiv = document.getElementById('youtube-player');
+            // --- Load the YouTube IFrame API ---
+            function loadYouTubeAPI() {
+                if (document.getElementById('youtube-api')) return;
+                const tag = document.createElement('script');
+                tag.id = 'youtube-api';
+                tag.src = 'https://www.youtube.com/iframe_api';
+                tag.async = true;
+                tag.defer = true;
+                document.head.appendChild(tag);
+            }
 
+            // --- Called by the API when ready ---
+            window.onYouTubeIframeAPIReady = function() {
+                player = new YT.Player('youtube-player', {
+                    height: '1',
+                    width: '1',
+                    videoId: VIDEO_ID,
+                    playerVars: {
+                        autoplay: 0,
+                        loop: 1,
+                        playlist: VIDEO_ID,
+                        controls: 0,
+                        showinfo: 0,
+                        rel: 0,
+                        modestbranding: 1,
+                        iv_load_policy: 3,
+                        disablekb: 1,
+                        mute: 0
+                    },
+                    events: {
+                        onReady: function(event) {
+                            playerReady = true;
+                            event.target.setVolume(100);
+                            currentVolume = 100;
+                            targetVolume = 100;
+                            updateVolumeIndicator(100);
+                            document.getElementById('music-indicator').classList.add('active');
+                            console.log('🎵 YouTube player ready.');
+                        },
+                        onStateChange: function(event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                player.playVideo();
+                            }
+                        },
+                        onError: function(event) {
+                            console.warn('YouTube API error:', event.data);
+                        }
+                    }
+                });
+            };
+
+            // --- Volume control ---
             function setPlayerVolume(vol) {
                 if (!player || !playerReady) return;
                 try {
-                    player.setVolume(Math.round(vol));
-                    currentVolume = vol;
-                    updateVolumeIndicator(vol);
+                    const clamped = Math.max(0, Math.min(100, vol));
+                    player.setVolume(Math.round(clamped));
+                    currentVolume = clamped;
+                    updateVolumeIndicator(clamped);
                 } catch (e) {
                     console.warn('Volume set error:', e);
                 }
@@ -1023,13 +1035,11 @@
                 if (fadeInterval) {
                     clearInterval(fadeInterval);
                     fadeInterval = null;
-                    isFading = false;
                 }
                 if (!player || !playerReady) return;
 
                 const startVol = currentVolume;
                 const startTime = performance.now();
-                isFading = true;
 
                 fadeInterval = setInterval(() => {
                     const elapsed = performance.now() - startTime;
@@ -1042,7 +1052,6 @@
                     if (progress >= 1) {
                         clearInterval(fadeInterval);
                         fadeInterval = null;
-                        isFading = false;
                         currentVolume = target;
                         targetVolume = target;
                         updateVolumeIndicator(target);
@@ -1050,16 +1059,15 @@
                 }, 16);
             }
 
-            // Duck to a very low volume (6%) when TTS starts
+            // --- Public API for TTS callbacks ---
             function duckVolume() {
                 if (fadeInterval) {
                     clearInterval(fadeInterval);
                     fadeInterval = null;
-                    isFading = false;
                 }
-                targetVolume = 6; // even lower than half (was 10)
+                targetVolume = 25; // duck to 25% during narration
                 if (player && playerReady) {
-                    fadeVolume(6, 1000); // smooth 1-second fade
+                    fadeVolume(25, 1000);
                 }
             }
 
@@ -1069,8 +1077,22 @@
             }
 
             function fadeInMusic() {
-                if (currentVolume === 20 || !player || !playerReady) return;
-                fadeVolume(20, 2000);
+                if (currentVolume === 100 || !player || !playerReady) return;
+                fadeVolume(100, 2000);
+            }
+
+            function startPlayback() {
+                if (!player || !playerReady) return;
+                try {
+                    player.playVideo();
+                    player.setVolume(100);
+                    currentVolume = 100;
+                    targetVolume = 100;
+                    updateVolumeIndicator(100);
+                    console.log('🎵 Playback started at full volume.');
+                } catch (e) {
+                    console.warn('Playback error:', e);
+                }
             }
 
             window.__music = {
@@ -1081,185 +1103,270 @@
                     if (fadeInterval) {
                         clearInterval(fadeInterval);
                         fadeInterval = null;
-                        isFading = false;
                     }
                     targetVolume = vol;
                     if (player && playerReady) setPlayerVolume(vol);
                 },
-                isFading: () => isFading
+                isReady: () => playerReady
             };
 
-            // ---- Fallback iframe ----
-            function createFallbackIframe() {
-                if (fallbackIframe) return;
-                fallbackIframe = document.createElement('iframe');
-                fallbackIframe.src =
-                    'https://www.youtube.com/embed/UIam8zl4af8?autoplay=1&mute=1&loop=1&playlist=UIam8zl4af8&controls=0&disablekb=1&modestbranding=1&iv_load_policy=3&playsinline=1';
-                fallbackIframe.allow = 'autoplay; encrypted-media';
-                fallbackIframe.style.width = '100%';
-                fallbackIframe.style.height = '100%';
-                fallbackIframe.style.border = 'none';
-                container.innerHTML = '';
-                container.appendChild(fallbackIframe);
-                console.log('🎵 Fallback iframe injected (muted autoplay).');
-                playerReady = true;
-                document.getElementById('music-indicator').classList.add('active');
-                updateVolumeIndicator(20);
-            }
-
-            // ---- API attempt ----
-            function loadYouTubeAPI() {
-                if (document.getElementById('youtube-api')) return;
-                const tag = document.createElement('script');
-                tag.id = 'youtube-api';
-                tag.src = 'https://www.youtube.com/iframe_api';
-                tag.async = true;
-                tag.defer = true;
-                document.head.appendChild(tag);
-            }
-
-            window.onYouTubeIframeAPIReady = function() {
-                if (fallbackIframe) return;
-                clearTimeout(apiFallbackTimer);
-                player = new YT.Player('youtube-player', {
-                    height: '34',
-                    width: '60',
-                    videoId: 'UIam8zl4af8',
-                    playerVars: {
-                        autoplay: 1,
-                        loop: 1,
-                        playlist: 'UIam8zl4af8',
-                        controls: 0,
-                        showinfo: 0,
-                        rel: 0,
-                        modestbranding: 1,
-                        iv_load_policy: 3,
-                        disablekb: 1,
-                        mute: 1
-                    },
-                    events: {
-                        onReady: function(event) {
-                            playerReady = true;
-                            event.target.setVolume(20);
-                            currentVolume = 20;
-                            targetVolume = 20;
-                            updateVolumeIndicator(20);
-                            document.getElementById('music-indicator').classList.add('active');
-                            const iframe = container.querySelector('iframe');
-                            if (iframe) {
-                                iframe.allow = 'autoplay; encrypted-media';
-                            }
-                            event.target.playVideo();
-                            console.log('🎵 YouTube API player ready (muted).');
-                        },
-                        onStateChange: function(event) {
-                            if (event.data === YT.PlayerState.ENDED) {
-                                player.playVideo();
-                            }
-                        },
-                        onError: function(event) {
-                            console.warn('YouTube API error:', event.data);
-                            if (!fallbackIframe) {
-                                createFallbackIframe();
-                            }
-                        }
-                    }
-                });
-            };
-
-            function startAPITimer() {
-                apiFallbackTimer = setTimeout(() => {
-                    if (!playerReady && !fallbackIframe) {
-                        console.warn('YouTube API timed out, using fallback iframe.');
-                        createFallbackIframe();
-                    }
-                }, 3000);
-            }
-
+            // --- Load the API ---
             loadYouTubeAPI();
-            startAPITimer();
 
+            // --- Helper: ensure audio starts on user gesture ---
             function ensureAudioPlayback() {
-                if (fallbackIframe) {
-                    console.log('🎵 Fallback iframe is playing muted (cannot unmute).');
-                    return;
-                }
-                if (!player || !playerReady) return;
-                try {
-                    player.unMute();
-                    player.setVolume(20);
-                    currentVolume = 20;
-                    targetVolume = 20;
-                    updateVolumeIndicator(20);
-                    player.playVideo();
-                    console.log('🎵 Audio unmuted and playing.');
-                } catch (e) {
-                    console.warn('Unmute error:', e);
+                if (player && playerReady) {
+                    startPlayback();
+                } else {
+                    // If player isn't ready yet, wait for it.
+                    const checkReady = setInterval(() => {
+                        if (playerReady) {
+                            clearInterval(checkReady);
+                            startPlayback();
+                        }
+                    }, 200);
                 }
             }
 
             // ======================================================================
-            // 1. STORY DATA
+            // 1. STORY DATA — 6 PARTS from revised Chapter 1 (no hashtags)
             // ======================================================================
-            const CHAPTERS = [{
-                id: 'mountain',
-                title: 'Chapter I · The Mountain of Reckoning',
-                text: `The saga begins in the white‑hot center of a cataclysmic misunderstanding. Historically recorded as the "Public Beginning," this moment is the jagged pivot where an act of desperate salvation was rebranded as an international war crime.
 
-        The First Dragon Rider's descent down the frozen mountain was a frantic race against biological entropy. To the average observer, the white wall following him was merely an avalanche. To the Rider's expert eye, the truth was far more terrifying: the snow churned with demonic icy hands—the "biological overflow" of the Ice Queen, a Water Variant whose exponential power compounds with every breath. The avalanche was not a weapon of malice, but a cry for help.`,
+            const fullStory = ` THE AGE OF BLACK FIRE
+
+         Chapter 1: The Descent
+
+        ---
+
+         Part One: The Catastrophic Descent
+
+        The mountain screamed.
+
+        Not with wind, nor with the groan of shifting ice—it screamed with the voice of something ancient and terrified. The First Dragon Rider ran, his boots punching through the frozen crust with every desperate stride, leaving craters behind him like the footprints of a wounded god. His dark red hair whipped wild and tangled, a banner of chaos against the white apocalypse that thundered down the slope.
+
+        The avalanche was wrong.
+
+        Snow and ice cascaded in a deafening roar, but within that white torrent, demonic hands clawed upward—fingers of ice contorted into grasping talons, monstrous faces frozen in expressions of hunger and rage. The Ice Queen's fear had taken physical form, her nightmare given flesh and sent to hunt him. The snow was not falling; it was reaching.
+
+        In his arms, two bundles. Two infants.
+
+        His son, warm to the touch, radiating heat like a small sun—the child of his blood and his fire. And the other: a grey-skinned child wrapped in sacred cloth, silent and still, carrying something ancient in its tiny chest. The Rider had found it in the Queen's frozen cave. Her fear had been for this child. Her instinct had been to protect it. Now it was his burden to carry.
+
+        The mountain had been a two-day climb. He made it down in seven hours. His lungs burned with the cold, but his son's heat kept him alive. The boy was powerful—born of the bloodline that had once spoken to dragons. A second‑generation variant, using his infant power to shield them both from temperatures that would have killed a lesser man. The Rider had kept his son a secret. Even from the Saint. Even from the Wicked One. Because their union had never been personal; it had been a pact of survival. And the world of fire was no place for a child to grow up known.
+
+        He reached the treeline. The snow thinned. The demonic hands retreated into the mountain's shadow, and the Rider whispered to the bundle on his chest, "She's finally going back to sleep."
+
+        He knew the Queen would not wake for a decade—perhaps longer. The fear that had triggered her power had subsided, and her body would now take its long, slow journey into slumber. Her children, unborn and unknown, would be born in the decade of her silence.
+
+        The Rider broke through the last line of trees.
+
+        And the world stopped.
+
+        ---
+
+         Part Two: The Vision of Betrayal
+
+        Below him, the valley spread out like a wound. The city—a colony of refugees, both gifted and non‑gifted, who had come to this frozen edge of the world seeking shelter from the wars—was burning. Not with dragon fire. Not with natural flame.
+
+        Holy fire.
+
+        Blades of white‑hot light rained from the sky, carving through stone and flesh with equal indifference. Buildings collapsed in pillars of dust and divine radiance. In the center of the chaos stood a man in brilliant white armor, his face frozen in religious ecstasy, his eyes empty, his body moving with puppeteer precision.
+
+        The Saint of Dragons.
+
+        And above the city, a figure floated on currents of psychic energy, his long purple hair flowing like silk. The Wicked One. His arms spread wide, his third eye glowing with malevolent light. Explosions of mental energy detonated across the city in random patterns, destroying homes, temples, and shelters.
+
+        The Rider's face was unreadable. His award‑winning smile was gone. In its place was something hollow, something broken.
+
+        They were supposed to be better than this.
+
+        The Saint was his right hand. The Wicked One was his closest confidant. They had bled together, fought together, believed in the dream of a world where dragons and humans could coexist.
+
+        And now they were slaughtering the very people they had sworn to protect.
+
+        The Rider made his decision.
+
+        He turned from the city, sprinting toward the shoreline where the sea met the frozen land. The snowfall had become a gentle flurry now—the Queen's fear finally calming, her power receding into the depths of the earth. He reached the water's edge and placed the two bundles on the wet sand.
+
+        "Not this life," he whispered to his son. "You will not carry my war."
+
+        He summoned the ancient lion turtle.
+
+        ---
+
+         Part Three: The Hand‑off at the Misty Shore
+
+        The beast rose from the depths like a continent awakening—its shell larger than the city itself, moss and stone encrusting its back like ancient armor. It had been sleeping for centuries. The Rider's call reached it through the water, through the vibration of his bloodline, through the connection that bound all fire to its source.
+
+        He placed the bundles on the turtle's shell: his son and the grey child. Then he reached into his coat and withdrew the Mask—white as bone, smooth as polished marble, the artifact that had once belonged to the First Fire Bearer. It hummed with power, with memory, with the weight of five thousand years of blood and fire.
+
+        He placed the mask beside his son.
+
+        Then he turned away from the turtle's shell. His body began to change—scales erupting from his skin, bones reshaping, his form becoming something no longer entirely human. The White Dragon armor encased him, and for a moment, he was something glorious. Something terrible. Something not seen since the First Great Gifted War.
+
+        He walked toward the city.
+
+        Behind him, the ancient turtle sank beneath the waves, carrying the two children toward an unknown shore. Its destination was written in no map, determined by no will but the current and the deep.
+
+        The mist swallowed the turtle's trail.
+
+        ---
+
+         Part Four: The Watcher's Hesitation
+
+        On a ridge above the valley, a man watched.
+
+        He was young, skinny, with short blonde hair and black eyes. A cigarette hung from his lip, unlit. He had the look of a man who had smoked for twenty years.
+
+        Agent #083.
+
+        He had been sent to monitor the Ice Queen's cave. The Organization had suspected her power was destabilizing. They had not expected this—a global collapse, a legendary betrayal, the disappearance of the First Dragon Rider, and two infants vanishing into the sea.
+
+        #083's mind raced through the calculations. The Rider was in the water. The infants were on the turtle. The Mask was with the children.
+
+        The Mask.
+
+        He had to choose: follow the Rider or follow the children.
+
+        He hesitated.
+
+        The children were already out of sight. The Rider was already gone.
+
+        #083 watched the blue fire fade. He watched the city burn. He watched the Saint and the Wicked One disappear into the mountains.
+
+        Then he made his decision.
+
+        He followed the turtle.
+
+        But the mist had already swallowed it. The trail was gone.
+
+        He was the Architect of Hesitation. And his hesitation had cost him everything.
+
+        ---
+
+         Part Five: The Blue Fire Sacrifice
+
+        The Rider walked through the burning fields, past the bodies of the dead, toward the city where his friends had become monsters.
+
+        The Saint saw him first. Those empty eyes flickered with recognition, then confusion, then something that might have been grief. The holy blades in his hands faltered, their white‑hot light dimming.
+
+        "Rider," the Saint said, his voice a broken whisper. "I... I can't... I don't know what I'm..."
+
+        The Rider did not respond. His voice was gone, burned away by the cold that had nearly killed him on the mountain.
+
+        The Wicked One saw him second. His expression shifted. There was no madness in it, no guilt—just the cold calculation of a man whose plans had finally come to fruition.
+
+        He had known.
+
+        "Ah," the Wicked One said, his voice smooth as silk. "The hero returns. I was wondering when you would show up."
+
+        The Rider's fists clenched.
+
+        "Do not look at me like that," the Wicked One continued. "You knew what I was. You knew what I was capable of. You just did not want to admit it."
+
+        The Rider's response was silence—and a glow that began to emanate from his armor.
+
+        Blue fire.
+
+        Hotter than the core of any forge. More destructive than any dragon's breath. The Rider's body began to radiate heat that melted the snow for a hundred yards in every direction.
+
+        "I see," the Wicked One said, his voice finally betraying a hint of fear. "The final transformation."
+
+        The Rider soared into the air, blue fire erupting from every pore, every scale, every crack in his armor. He was going to erase everything—the city, the betrayal, the memory of what he had become.
+
+        The Saint of Dragons broke from his mind control with a scream of horror. "No! Rider, no! Please!"
+
+        The Rider's glow intensified.
+
+        The Wicked One's expression shifted to genuine fear. "Please," he said, his voice breaking. "I had no choice. The voice in my head..."
+
+        The Rider hesitated.
+
+        In that moment, the blue fire flickered. The self‑destruct slipped. And the Wicked One grabbed the Saint by the collar and ran.
+
+        The Rider's body erupted in blue flame, but his heart was no longer in it. The explosion was not self‑destruction—it was propulsion. His body soared through the air, over the burning city, over the sea, and plunged into the frozen depths of the ocean.
+
+        In the water, the blue fire extinguished. His body sank. His armor began to crack. And in the darkness of the deep, ancient hands reached for him.
+
+        ---
+
+         Part Six: The Hard Cut (The Aftermath)
+
+        One month later, the world was still burning.
+
+        Not literally. The fires had been extinguished, the snows had returned, the mountain had gone silent. But the story was burning. The truth was being consumed by propaganda.
+
+        The Kingdom of Ivan moved quickly. Their scholars, scribes, and priests worked in perfect synchronization to craft a new narrative: The First Dragon Rider had gone mad. He had allied with the heretic Fire clans and turned his dragons against innocent civilians. The Saint of Dragons and the Wicked One had tried to stop him. They had failed. The Rider had destroyed himself.
+
+        The story spread like wildfire.
+
+        In the villages, in the cities, in the courts of kings and the homes of commoners, the tale was told and retold. The First Dragon Rider was now a war criminal—a monster, a cautionary tale.
+
+        The Saint of Dragons was declared a martyr. The Wicked One was declared a hero.
+
+        And the Fire bloodlines were outlawed. Anyone with fire in their veins was branded a heretic. The Crusades began within weeks.
+
+        No bodies were ever found.
+
+        The dragons had disappeared from the sky.
+
+        The truth was buried.
+
+        But the truth has a way of rising from the dead.
+
+        ---
+
+        **End of Chapter 1**
+
+        ---
+
+        *Author's Note: What you have just read is a legend. What you will learn in the coming chapters is the truth. Every generation tries to fix the mistakes of the father, and every generation fails. This is the first fracture. Welcome to the Age of Black Fire.*`;
+
+            // Split into parts by "---"
+            const parts = fullStory.split('---').map(s => s.trim()).filter(s => s.length > 0);
+
+            const slides = [];
+            for (let p of parts) {
+                const lines = p.split('\n').map(l => l.trim());
+                let title = '';
+                let text = '';
+                let foundTitle = false;
+                for (let line of lines) {
+                    if (!foundTitle && /^Part\s+(One|Two|Three|Four|Five|Six)\s*:/i.test(line)) {
+                        title = line.replace(/^Part\s+\w+\s*:\s*/, '').trim();
+                        foundTitle = true;
+                        continue;
+                    }
+                    if (foundTitle) {
+                        text += line + '\n';
+                    }
+                }
+                if (!foundTitle) {
+                    const firstNonEmpty = lines.find(l => l.length > 0);
+                    if (firstNonEmpty) {
+                        title = firstNonEmpty;
+                        text = lines.slice(1).join('\n');
+                    } else {
+                        title = `Part ${slides.length+1}`;
+                        text = p;
+                    }
+                }
+                text = text.trim();
+                slides.push({ title, text });
+            }
+
+            const overlayIds = [
+                'part1-overlay', 'part2-overlay', 'part3-overlay',
+                'part4-overlay', 'part5-overlay', 'part6-overlay'
+            ];
+
+            const CHAPTERS = slides.map((slide, i) => ({
+                id: `part${i+1}`,
+                title: `Chapter 1 · Part ${i+1}: ${slide.title}`,
+                text: slide.text,
                 image: 'mountain',
-                overlayId: 'chapter-image-overlay'
-            }, {
-                id: 'heirs',
-                title: 'Chapter II · The Burden of the Two Heirs',
-                text: `As the Rider plummeted toward the shoreline, he carried the future of two distinct lineages: his son—the Son of Fire, warm to the touch—and a grey‑skinned Variant, deeply cold, the essence of the Mortal Angel. Keeping his son a secret was a strategic necessity in a world defined by Gifted Escalation. He used the infant's innate heat as a thermal battery to survive the freezing climb, choosing the weight of a secret over the boy becoming a tool of the theocratic state.`,
-                image: 'heirs',
-                overlayId: 'chapter2-image-overlay'
-            }, {
-                id: 'betrayal',
-                title: 'Chapter III · The Sight of Betrayal',
-                text: `At the base of the mountain, the Rider's legendary smile vanished. He witnessed his closest allies, the Saint of Dragons and the Wicked One, laying waste to a colony of non‑gifted refugees. The Saint, once driven by holy purpose, unleashed white lightning blades; beside him, the Wicked One used psychic energy to level homes. His friends—the symbols of global liberation—had become the monsters they once fought.`,
-                image: 'betrayal',
-                overlayId: 'chapter3-image-overlay'
-            }, {
-                id: 'turtle',
-                title: 'Chapter IV · The Covenant of the Lion Turtle',
-                text: `Reaching the shoreline, the Rider summoned an ancient lion turtle. He placed the infants on its shell, choosing the uncertainty of the sea over the guaranteed corruption of the land. In a final act of legacy, he placed his Fire Mask on one of the children—a white mask, assumed after his first dragon died. By bestowing the mask, he ensured the Artifact's survival at the cost of his own protection.`,
-                image: 'turtle',
-                overlayId: 'chapter4-image-overlay'
-            }, {
-                id: 'fracture',
-                title: 'Chapter V · The Fracture of the Triumvirate',
-                text: `The strategic stability of the world once rested upon the unity of three men: the Dragon Rider, the Saint, and the Wicked One. Their fracture was not merely personal; it was a geopolitical disaster. When the Triumvirate broke, wisdom vanished, leaving only raw power in the hands of the flawed. The Wicked One's 3rd eye awakening showed him visions of his own death by Black Fire, fueling his paranoia. He whipped up a fake blizzard, seized the Saint's mind, and buried the truth in snow and ice.`,
-                image: 'fracture',
-                overlayId: 'chapter5-image-overlay'
-            }, {
-                id: 'exile',
-                title: 'Chapter VI · The Ashen Exile',
-                text: `The sea did not claim him, though it tried. It chewed him up and spat him out upon a shore of blackened glass and twisted driftwood—a land so scarred by ancient fire that nothing grew. The First Dragon Rider, once the architect of hope, lay broken amidst the ashes of a world that had already forgotten him.
-
-        He had given everything: his name, his honor, the warmth of his own son. In return, the world gave him only the cold silence of exile. The Kingdom of Ivan had won. The narrative was sealed. He was no longer the liberator, but the monster whose dark fire had nearly consumed the continent.
-
-        Yet, as he dragged his broken body away from the tide, he felt it—a faint thrum in his chest. The Black Fire. It was not a curse, as they preached, but a birthright. It was the echo of the first flame, the spark that existed before the Eclipse. He understood now. The Wicked One's vision was not of his own death, but of his rebirth. He had to find his son. He had to find the grey-skinned child. The world had not seen the last of the Dragon Rider. It had only seen the beginning of the Age of Black Fire.`,
-                image: 'fracture',
-                overlayId: 'chapter6-image-overlay'
-            }, {
-                id: 'otherworld',
-                title: 'Chapter VII · The Other World',
-                text: `The Other World was a place of nightmares. It was an alternate reality, a hellish wasteland with a red sky, white sand, greenish‑blue water, and black leafless trees. It was the original home of dragons, and it was a place of pure survival—no love, no warmth, only rage and hunger. The air was thin and dry. The rain burned like acid. The earth was chalk‑like and unstable.
-
-        Humans who crossed over transformed. Non‑gifted died. Gifted became twisted shadows, mimicking human movements with demonic forms. The Black Fire used by gifted humans was summoned from a crater in this world, where a sleeping creature's scales produced flames that could not be extinguished.
-
-        The Dragon Kingdom possessed a stable portal to this realm, guarded by a black entity from the other side that took the shape of a human. Every kingdom had a secret Guardian from the Other World, an extreme security measure known only to the highest elite.
-
-        The 5th Artifact was not a physical object that fell to Earth. It was an Orb that floated above the clouds, containing swirling mists. It only activated when all four primary artifacts—the Mask, Trident, Glove, and Halo—were collected and synced together. The Orb granted absolute mastery over all elements and chemicals, allowing the user to turn water to ice, melt it, boil it, create steam, and shape clouds at will. This was the Mastery of Clouds.
-
-        But the true secret was that the Orb unlocked Mental Creation—the power to manifest thought into reality based on a scientific understanding of atoms. The user could only create what they understood. This was the "Living God" state that the Ascensionists had sought for centuries.
-
-        The Grandson, after his investigation, discovered that the Orb had never been used. He understood that the world did not need to be fixed; it needed to be reimagined. But to do so, he had to descend into Atlantis and unlock the power of the clouds.`,
-                image: 'turtle',
-                overlayId: 'chapter7-image-overlay'
-            }];
+                overlayId: overlayIds[i] || 'part1-overlay'
+            }));
 
             // ======================================================================
             // 2. DOM REFS
@@ -1398,108 +1505,12 @@
                         iCtx.closePath();
                         iCtx.fill();
                         break;
-
-                    case 'heirs': {
-                        const cx1 = W * 0.35,
-                            cy1 = H * 0.5;
-                        const cx2 = W * 0.65,
-                            cy2 = H * 0.5;
-                        const grad1 = iCtx.createRadialGradient(cx1, cy1, 0, cx1, cy1, W * 0.2);
-                        grad1.addColorStop(0, 'rgba(255, 100, 50, 0.8)');
-                        grad1.addColorStop(1, 'rgba(255, 50, 0, 0)');
-                        iCtx.fillStyle = grad1;
-                        iCtx.beginPath();
-                        iCtx.arc(cx1, cy1, W * 0.2, 0, Math.PI * 2);
-                        iCtx.fill();
-
-                        const grad2 = iCtx.createRadialGradient(cx2, cy2, 0, cx2, cy2, W * 0.2);
-                        grad2.addColorStop(0, 'rgba(50, 150, 255, 0.8)');
-                        grad2.addColorStop(1, 'rgba(0, 50, 255, 0)');
-                        iCtx.fillStyle = grad2;
-                        iCtx.beginPath();
-                        iCtx.arc(cx2, cy2, W * 0.2, 0, Math.PI * 2);
-                        iCtx.fill();
-                        break;
-                    }
-
-                    case 'betrayal':
-                        for (let i = 0; i < 10; i++) {
-                            iCtx.strokeStyle = `rgba(200, 200, 255, ${0.2 + Math.random() * 0.3})`;
-                            iCtx.lineWidth = 2 + Math.random() * 4;
-                            iCtx.beginPath();
-                            let x = Math.random() * W,
-                                y = 0;
-                            iCtx.moveTo(x, y);
-                            while (y < H) {
-                                x += (Math.random() - 0.5) * 80;
-                                y += 20 + Math.random() * 40;
-                                iCtx.lineTo(x, y);
-                            }
-                            iCtx.stroke();
-                        }
-                        const grad3 = iCtx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.6);
-                        grad3.addColorStop(0, 'rgba(80, 0, 120, 0.3)');
-                        grad3.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                        iCtx.fillStyle = grad3;
-                        iCtx.fillRect(0, 0, W, H);
-                        break;
-
-                    case 'turtle':
-                        iCtx.fillStyle = 'rgba(30, 60, 40, 0.4)';
-                        iCtx.beginPath();
-                        iCtx.ellipse(W * 0.5, H * 0.7, W * 0.4, H * 0.15, 0, 0, Math.PI * 2);
-                        iCtx.fill();
-                        iCtx.fillStyle = 'rgba(40, 80, 50, 0.6)';
-                        iCtx.beginPath();
-                        iCtx.ellipse(W * 0.5, H * 0.5, W * 0.25, H * 0.2, 0, 0, Math.PI * 2);
-                        iCtx.fill();
-                        iCtx.fillStyle = 'rgba(40, 80, 50, 0.6)';
-                        iCtx.beginPath();
-                        iCtx.ellipse(W * 0.5, H * 0.35, W * 0.1, H * 0.1, 0, 0, Math.PI * 2);
-                        iCtx.fill();
-                        break;
-
-                    case 'fracture':
-                    case 'exile':
-                        for (let i = 0; i < 3; i++) {
-                            const x = W * (0.2 + i * 0.3);
-                            iCtx.fillStyle = 'rgba(100, 100, 120, 0.3)';
-                            iCtx.fillRect(x - 10, H * 0.2, 20, H * 0.6);
-                            if (i === 1) {
-                                iCtx.fillStyle = 'rgba(200, 50, 50, 0.4)';
-                                iCtx.fillRect(x - 15, H * 0.4, 30, 10);
-                                iCtx.fillRect(x - 10, H * 0.6, 20, 10);
-                            }
-                        }
-                        break;
-
-                    case 'shard':
-                    case 'otherworld':
-                        iCtx.fillStyle = 'rgba(20, 40, 70, 0.4)';
-                        iCtx.beginPath();
-                        iCtx.rect(0, 0, W, H);
-                        iCtx.fill();
-                        for (let i = 0; i < 15; i++) {
-                            const x = Math.random() * W;
-                            const y = Math.random() * H;
-                            iCtx.fillStyle = `rgba(150, 220, 255, ${0.1 + Math.random() * 0.3})`;
-                            iCtx.shadowColor = '#3b8cff';
-                            iCtx.shadowBlur = 30;
-                            iCtx.beginPath();
-                            iCtx.moveTo(x, y);
-                            iCtx.lineTo(x + 10 + Math.random() * 30, y - 10 - Math.random() * 20);
-                            iCtx.lineTo(x + 20 + Math.random() * 40, y + 5 + Math.random() * 20);
-                            iCtx.closePath();
-                            iCtx.fill();
-                        }
-                        iCtx.shadowBlur = 0;
-                        break;
                 }
                 iCtx.globalAlpha = 1.0;
             }
 
             // ======================================================================
-            // 6. NARRATIVE ENGINE with auto-continue & slow music fade
+            // 6. NARRATIVE ENGINE
             // ======================================================================
             let currentChapterIndex = 0;
             let narrationComplete = false;
@@ -1589,15 +1600,15 @@
                         narratorDot.classList.remove('paused');
                         waveform.classList.remove('paused');
                         if (window.__music && window.__music.duck) {
-                            window.__music.duck(); // fade to 6% smoothly
+                            window.__music.duck();
                         }
                     };
                     utterance.onend = () => {
                         narratorDot.classList.add('paused');
                         waveform.classList.add('paused');
                         ttsEnded = true;
-                        if (window.__music && window.__music.fadeOut) {
-                            window.__music.fadeOut(8000);
+                        if (window.__music && window.__music.fadeIn) {
+                            window.__music.fadeIn();
                         }
                         if (narrationComplete) {
                             startAutoContinue();
@@ -1607,8 +1618,8 @@
                         narratorDot.classList.add('paused');
                         waveform.classList.add('paused');
                         ttsEnded = true;
-                        if (window.__music && window.__music.fadeOut) {
-                            window.__music.fadeOut(8000);
+                        if (window.__music && window.__music.fadeIn) {
+                            window.__music.fadeIn();
                         }
                         if (narrationComplete) {
                             startAutoContinue();
@@ -1738,7 +1749,6 @@
                 finalOverlay.classList.add('active');
                 storyTextElement.style.opacity = '0.3';
 
-                // Music keeps playing forever — no fade out
                 console.log('🎵 The End — music continues to loop.');
             }
 
@@ -1776,6 +1786,7 @@
             }, 3500);
 
             btnEnter.addEventListener('click', () => {
+                // Start YouTube audio on user gesture
                 ensureAudioPlayback();
 
                 opening.classList.remove('active');
@@ -1846,9 +1857,9 @@
             // ======================================================================
             drawScene('mountain');
             console.log('✦ The Age of Black Fire · Cinematic Experience Loaded ✦');
-            console.log('🎵 Images: object-fit: cover (zoomed in).');
-            console.log('🔊 TTS ducking: fades to 6% (smooth 1s), then fades to 0 over 8s after TTS ends.');
-            console.log('🎵 Final screen: music loops forever.');
+            console.log('🎵 Using YouTube track: https://www.youtube.com/watch?v=dPD4mSuZmvU');
+            console.log('🔊 Volume starts at 100%, ducks to 25% during TTS.');
+            console.log('🎵 Final screen: music continues to loop.');
 
         })();
     </script>
