@@ -1,10 +1,71 @@
-<iframe 
-    width="560" 
-    height="315" 
-    src="https://www.youtube-nocookie.com/embed/dPD4mSuZmvU?si=2JTcGzLILRFrqLmX&autoplay=1&mute=1" 
-    title="YouTube video player" 
-    frameborder="0" 
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-    referrerpolicy="strict-origin-when-cross-origin" 
-    allowfullscreen>
-</iframe>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attempting to Auto-Click (Will Fail)</title>
+</head>
+<body>
+
+    <div id="status" style="font-family: monospace; padding: 20px; background: #222; color: #0f0; border-radius: 10px; margin-bottom: 20px;">
+        ⏳ Attempting to auto-click the video...
+    </div>
+
+    <iframe id="myVideo" width="560" height="315" 
+        src="https://www.youtube.com/embed/dPD4mSuZmvU?si=2JTcGzLILRFrqLmX&autoplay=0&mute=0" 
+        allow="autoplay; encrypted-media" allowfullscreen>
+    </iframe>
+
+    <script>
+        window.onload = function() {
+            const iframe = document.getElementById('myVideo');
+            const status = document.getElementById('status');
+
+            // ATTEMPT 1: Standard .click() on the iframe
+            iframe.click();
+            status.innerHTML = "❌ Attempt 1 (.click()) failed. Video is still paused.<br>";
+
+            // ATTEMPT 2: Dispatch a fake MouseEvent
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                clientX: 280,
+                clientY: 150
+            });
+            iframe.dispatchEvent(clickEvent);
+            status.innerHTML += "❌ Attempt 2 (dispatchEvent) failed. Event.isTrusted = " + clickEvent.isTrusted + " (must be TRUE).<br>";
+
+            // ATTEMPT 3: Send a postMessage to the YouTube player to forcibly play
+            try {
+                iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                status.innerHTML += "❌ Attempt 3 (postMessage play) failed. Browser blocked audio.<br>";
+            } catch(e) {
+                status.innerHTML += "❌ Attempt 3 blocked by cross-origin policy.<br>";
+            }
+
+            // ATTEMPT 4: Try to unmute via postMessage
+            try {
+                iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                status.innerHTML += "❌ Attempt 4 (postMessage unMute) failed. Browser blocked audio.<br>";
+            } catch(e) {
+                status.innerHTML += "❌ Attempt 4 blocked by cross-origin policy.<br>";
+            }
+
+            // ATTEMPT 5: Trigger a click on the wrapper div surrounding the iframe
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'absolute';
+            wrapper.style.width = '560px';
+            wrapper.style.height = '315px';
+            wrapper.style.top = '0';
+            wrapper.style.left = '0';
+            wrapper.style.zIndex = '9999';
+            wrapper.style.opacity = '0';
+            iframe.parentNode.insertBefore(wrapper, iframe);
+            wrapper.click();
+            status.innerHTML += "❌ Attempt 5 (invisible overlay click) failed. isTrusted = false.<br>";
+
+            // Final verdict
+            status.innerHTML += "<br><span style='color: #ff6b6b;'>🚫 RESULT: Every automated click attempt was blocked by the browser.<br> The video will NOT play with sound until a HUMAN physically clicks it.</span>";
+        };
+    </script>
+</body>
+</html>
