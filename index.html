@@ -1,544 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Music Box · Monochrome Moon</title>
+<script>
+  (function() {
+    'use strict';
 
-    <!-- ════════════════════════════════════════════════════════
-    STYLES – all in one
-    ════════════════════════════════════════════════════════ -->
-    <style>
-        /* ─── RESET ─── */
-        *,
-        *::before,
-        *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    const overlay = document.getElementById('click-overlay');
+    const statusText = document.getElementById('status-text');
+    const box = document.querySelector('.music-box');
+    let player = null;
+    let isPlaying = false;
+    let playerReady = false;
+    let soundTimeout = null;
+    let fadeInterval = null;
+    let playRequested = false;
+    let activated = false; // prevent double triggers
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0a0a0a;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            padding: 16px;
-            margin: 0;
+    window.onYouTubeIframeAPIReady = function() {
+      try {
+        const playerVars = {
+          autoplay: 0,
+          mute: 0,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          disablekb: 1
+        };
+        const origin = window.location.origin;
+        if (origin && !origin.startsWith('file://')) {
+          playerVars.origin = origin;
         }
-
-        /* ─── MUSIC BOX EMBED (the widget) ─── */
-        .music-box {
-            position: relative;
-            width: 100%;
-            max-width: 820px;
-            aspect-ratio: 16 / 9;
-            border-radius: 28px;
-            overflow: hidden;
-            background: #0a0a0a;
-            box-shadow:
-                0 20px 60px rgba(0, 0, 0, 0.9),
-                0 0 0 1px rgba(255, 255, 255, 0.04),
-                inset 0 0 80px rgba(30, 10, 10, 0.3);
-            transition: box-shadow 0.6s ease;
-        }
-        .music-box:hover {
-            box-shadow:
-                0 28px 80px rgba(0, 0, 0, 0.95),
-                0 0 0 1px rgba(255, 220, 180, 0.08),
-                inset 0 0 80px rgba(40, 15, 10, 0.4);
-        }
-
-        /* ─── BACKGROUND LAYER ─── */
-        #mono-bg {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
-            background: #0a0a0a;
-            pointer-events: none;
-            /* we handle clicks on the wrapper */;
-        }
-
-        /* ─── SKY ─── */
-        .sky {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, #0a0a0a 0%, #1a1414 35%, #2a0a0a 70%, #3d0808 100%);
-            animation: breatheSky 14s ease-in-out infinite alternate;
-        }
-        @keyframes breatheSky {
-            0% {
-                opacity: 0.85;
+        player = new YT.Player('player', {
+          videoId: 'dPD4mSuZmvU',
+          playerVars: playerVars,
+          events: {
+            onReady: function() {
+              playerReady = true;
+              console.log('✅ Player ready.');
+              if (playRequested) startPlaySequence();
+            },
+            onError: function(e) {
+              console.warn('⚠️ Player error:', e.data);
             }
-            100% {
-                opacity: 1;
+          }
+        });
+      } catch (err) {
+        console.error('YouTube init failed:', err);
+      }
+    };
+
+    function fadeInVolume(targetVolume, duration) {
+      if (fadeInterval) {
+        clearInterval(fadeInterval);
+        fadeInterval = null;
+      }
+      const startTime = Date.now();
+      const startVol = 0;
+      fadeInterval = setInterval(function() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 1.5);
+        const currentVol = Math.round(startVol + (targetVolume - startVol) * eased);
+        if (player && typeof player.setVolume === 'function') {
+          player.setVolume(currentVol);
+        }
+        if (progress >= 1) {
+          clearInterval(fadeInterval);
+          fadeInterval = null;
+          if (player && typeof player.setVolume === 'function') {
+            player.setVolume(targetVolume);
+          }
+          console.log('🔊 Fade-in complete.');
+        }
+      }, 50);
+    }
+
+    function startPlaySequence() {
+      if (isPlaying || activated) return;
+      if (!player || typeof player.playVideo !== 'function') {
+        playRequested = true;
+        return;
+      }
+      try {
+        activated = true;
+        overlay.classList.add('active');
+        player.playVideo();
+        player.setVolume(0);
+        statusText.textContent = '✦ silent for 5s… ✦';
+        statusText.classList.add('active');
+
+        if (soundTimeout) clearTimeout(soundTimeout);
+        soundTimeout = setTimeout(function() {
+          if (player) {
+            try {
+              player.unMute();
+              fadeInVolume(100, 3000);
+              statusText.textContent = '✦ now playing ✦';
+            } catch (err) {
+              console.warn('Fade-in failed:', err);
             }
+          }
+          soundTimeout = null;
+        }, 5000);
+
+        isPlaying = true;
+        playRequested = false;
+        console.log('▶️ Play sequence started.');
+      } catch (err) {
+        console.warn('Play attempt failed:', err);
+      }
+    }
+
+    // ── SCROLL TRIGGER (Intersection Observer) ──
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !activated) {
+          startPlaySequence();
+          observer.unobserve(box);
         }
+      });
+    }, { threshold: 0.5 });
+    observer.observe(box);
 
-        /* ─── MOON ─── */
-        .moon {
-            position: absolute;
-            top: 12%;
-            left: 65%;
-            width: 18vmax;
-            height: 18vmax;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 35%, #ffffff, #b0b0b0);
-            box-shadow: 0 0 60px rgba(200, 200, 200, 0.12), 0 0 150px rgba(150, 150, 150, 0.06);
-            animation: floatMoon 8s ease-in-out infinite alternate;
-            filter: blur(0.5px);
-        }
-        .moon::after {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 30%;
-            width: 15%;
-            height: 20%;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.06);
-            box-shadow: 40px 30px 0 -6px rgba(0, 0, 0, 0.05), -20px 50px 0 -10px rgba(0, 0, 0, 0.06);
-        }
-        @keyframes floatMoon {
-            0% {
-                transform: translateY(0px) scale(0.95) rotate(-2deg);
-            }
-            100% {
-                transform: translateY(-30px) scale(1.05) rotate(3deg);
-            }
-        }
+    // ── CLICK FALLBACK (always works) ──
+    overlay.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (!activated) startPlaySequence();
+    });
 
-        /* ─── GROUND GLOW ─── */
-        .ground-glow {
-            position: absolute;
-            bottom: -15px;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: radial-gradient(ellipse at 50% 100%, rgba(200, 70, 30, 0.10), transparent 70%);
-            filter: blur(20px);
-            z-index: 0;
-        }
+    // ── WISPS (unchanged) ──
+    (function createWisps() {
+      const container = document.getElementById('mono-bg');
+      const count = 50;
+      for (let i = 0; i < count; i++) {
+        const wisp = document.createElement('div');
+        wisp.className = 'wisp';
+        const r = Math.random();
+        if (r < 0.5) wisp.classList.add('small');
+        else if (r < 0.85) wisp.classList.add('medium');
+        else wisp.classList.add('large');
+        wisp.style.left = (Math.random() * 100) + '%';
+        wisp.style.bottom = (5 + Math.random() * 15) + '%';
+        wisp.style.setProperty('--rise', (120 + Math.random() * 180) + 'px');
+        wisp.style.setProperty('--drift', ((Math.random() - 0.5) * 100) + 'px');
+        wisp.style.setProperty('--delay', (Math.random() * 5.0).toFixed(2) + 's');
+        container.appendChild(wisp);
+      }
+      for (let i = 0; i < 6; i++) {
+        const big = document.createElement('div');
+        big.className = 'wisp large';
+        big.style.left = (Math.random() * 100) + '%';
+        big.style.bottom = (5 + Math.random() * 12) + '%';
+        big.style.setProperty('--rise', (160 + Math.random() * 200) + 'px');
+        big.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
+        big.style.setProperty('--delay', (Math.random() * 7.0).toFixed(2) + 's');
+        container.appendChild(big);
+      }
+    })();
 
-        /* ─── WISPS ─── */
-        .wisp {
-            position: absolute;
-            bottom: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ffcc88, #dd4411 60%, #881100);
-            animation: riseWisp var(--dur, 4s) ease-out infinite;
-            animation-delay: var(--delay, 0s);
-            opacity: 0;
-            filter: blur(0.5px);
-            box-shadow: 0 0 8px rgba(255, 120, 40, 0.15);
-            will-change: transform, opacity;
-        }
-        .wisp.small {
-            width: 4px;
-            height: 4px;
-            --dur: 3.6s;
-        }
-        .wisp.medium {
-            width: 7px;
-            height: 7px;
-            --dur: 4.8s;
-        }
-        .wisp.large {
-            width: 11px;
-            height: 11px;
-            --dur: 5.6s;
-            filter: blur(1.5px) brightness(1.3);
-            box-shadow: 0 0 16px rgba(255, 150, 80, 0.25);
-        }
-        @keyframes riseWisp {
-            0% {
-                transform: translateY(0px) translateX(0px) scale(0.4);
-                opacity: 0;
-            }
-            15% {
-                opacity: 0.9;
-            }
-            50% {
-                opacity: 1;
-            }
-            80% {
-                opacity: 0.4;
-            }
-            100% {
-                transform: translateY(calc(-1 * var(--rise, 150px))) translateX(var(--drift, 25px)) scale(0.1);
-                opacity: 0;
-            }
-        }
-
-        /* ─── STATUS TEXT ─── */
-        #status-text {
-            position: absolute;
-            bottom: 24px;
-            right: 32px;
-            color: rgba(255, 255, 255, 0.12);
-            font: 300 0.7rem/1.2 'Segoe UI', system-ui, sans-serif;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            pointer-events: none;
-            z-index: 5;
-            transition: color 0.8s ease;
-            text-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
-        }
-        #status-text.active {
-            color: rgba(180, 200, 255, 0.35);
-        }
-
-        /* ─── CLICK OVERLAY (captures clicks) ─── */
-        #click-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.8s ease;
-        }
-        #click-overlay:hover {
-            background: rgba(255, 255, 255, 0.01);
-        }
-        #click-overlay:active {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        /* ─── PLAY ICON (subtle) ─── */
-        .play-prompt {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            pointer-events: none;
-            opacity: 0.5;
-            transition: opacity 0.8s ease, transform 0.6s ease;
-            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
-        }
-        .play-prompt .icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.25);
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-            transition: all 0.4s ease;
-        }
-        .play-prompt span {
-            font: 300 0.7rem/1 'Segoe UI', system-ui, sans-serif;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.15);
-            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
-        }
-        #click-overlay:hover .play-prompt .icon {
-            border-color: rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.4);
-            transform: scale(1.05);
-        }
-        #click-overlay.active .play-prompt {
-            opacity: 0;
-            transform: scale(0.8);
-            transition: opacity 1.2s ease, transform 1.2s ease;
-        }
-
-        /* ─── VIDEO WRAPPER (hidden behind) ─── */
-        #video-wrapper {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            background: #000;
-            opacity: 0;
-            pointer-events: none;
-        }
-        #player {
-            width: 100%;
-            height: 100%;
-        }
-        #player iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 768px) {
-            .music-box {
-                border-radius: 18px;
-            }
-            .moon {
-                width: 30vmax;
-                height: 30vmax;
-                top: 8%;
-                left: 55%;
-            }
-            .ground-glow {
-                height: 40px;
-                filter: blur(15px);
-            }
-            .play-prompt .icon {
-                width: 40px;
-                height: 40px;
-                font-size: 17px;
-            }
-            #status-text {
-                bottom: 18px;
-                right: 22px;
-                font-size: 0.6rem;
-            }
-        }
-        @media (max-width: 480px) {
-            .music-box {
-                border-radius: 14px;
-            }
-            .ground-glow {
-                height: 30px;
-                filter: blur(10px);
-            }
-            .wisp.large {
-                width: 8px;
-                height: 8px;
-            }
-            .play-prompt .icon {
-                width: 34px;
-                height: 34px;
-                font-size: 14px;
-            }
-            .play-prompt span {
-                font-size: 0.6rem;
-            }
-            #status-text {
-                bottom: 14px;
-                right: 16px;
-                font-size: 0.5rem;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .moon {
-                width: 40vmax;
-                height: 40vmax;
-                top: 5%;
-                left: 50%;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- ════════════════════════════════════════════════════════
-    MUSIC BOX EMBED
-    ════════════════════════════════════════════════════════ -->
-    <div class="music-box" role="img" aria-label="Music box with moon and ambient soundtrack">
-
-        <!-- ─── BACKGROUND ─── -->
-        <div id="mono-bg">
-            <div class="sky"></div>
-            <div class="moon"></div>
-            <div class="ground-glow"></div>
-            <div id="status-text">✦ click anywhere to begin ✦</div>
-        </div>
-
-        <!-- ─── CLICK OVERLAY ─── -->
-        <button id="click-overlay" aria-label="Play music">
-            <div class="play-prompt">
-                <div class="icon">▶</div>
-                <span>click to play</span>
-            </div>
-        </button>
-
-        <!-- ─── VIDEO CONTAINER ─── -->
-        <div id="video-wrapper">
-            <div id="player"></div>
-        </div>
-
-    </div>
-
-    <!-- ════════════════════════════════════════════════════════
-    YOUTUBE API + SCRIPTS
-    ════════════════════════════════════════════════════════ -->
-    <script src="https://www.youtube.com/iframe_api">
-    </script>
-    <script>
-        (function() {
-            'use strict';
-
-            // ── DOM refs ──
-            const overlay = document.getElementById('click-overlay');
-            const statusText = document.getElementById('status-text');
-            let player = null;
-            let isPlaying = false;
-            let playerReady = false;
-            let soundTimeout = null;
-            let fadeInterval = null;
-            let playRequested = false;
-
-            // ── YouTube API ready ──
-            window.onYouTubeIframeAPIReady = function() {
-                try {
-                    const playerVars = {
-                        autoplay: 0,
-                        mute: 0,
-                        controls: 0,
-                        modestbranding: 1,
-                        rel: 0,
-                        disablekb: 1
-                    };
-                    const origin = window.location.origin;
-                    if (origin && !origin.startsWith('file://')) {
-                        playerVars.origin = origin;
-                    }
-
-                    player = new YT.Player('player', {
-                        videoId: 'dPD4mSuZmvU',
-                        playerVars: playerVars,
-                        events: {
-                            onReady: function() {
-                                playerReady = true;
-                                console.log('✅ Player ready.');
-                                if (playRequested) {
-                                    startPlaySequence();
-                                }
-                            },
-                            onError: function(e) {
-                                console.warn('⚠️ Player error:', e.data);
-                            }
-                        }
-                    });
-                } catch (err) {
-                    console.error('YouTube init failed:', err);
-                }
-            };
-
-            // ── Fade-in: 0 → targetVolume over duration (ms) ──
-            function fadeInVolume(targetVolume, duration) {
-                if (fadeInterval) {
-                    clearInterval(fadeInterval);
-                    fadeInterval = null;
-                }
-                const startTime = Date.now();
-                const startVol = 0;
-                fadeInterval = setInterval(function() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 1.5);
-                    const currentVol = Math.round(startVol + (targetVolume - startVol) * eased);
-                    if (player && typeof player.setVolume === 'function') {
-                        player.setVolume(currentVol);
-                    }
-                    if (progress >= 1) {
-                        clearInterval(fadeInterval);
-                        fadeInterval = null;
-                        if (player && typeof player.setVolume === 'function') {
-                            player.setVolume(targetVolume);
-                        }
-                        console.log('🔊 Fade-in complete.');
-                    }
-                }, 50);
-            }
-
-            // ── Start the music (5s silent → fade in) ──
-            function startPlaySequence() {
-                if (isPlaying) return;
-                if (!player || typeof player.playVideo !== 'function') {
-                    playRequested = true;
-                    return;
-                }
-
-                try {
-                    // Hide the prompt
-                    overlay.classList.add('active');
-
-                    // Play immediately at volume 0
-                    player.playVideo();
-                    player.setVolume(0);
-                    statusText.textContent = '✦ silent for 5s… ✦';
-                    statusText.classList.add('active');
-
-                    if (soundTimeout) {
-                        clearTimeout(soundTimeout);
-                        soundTimeout = null;
-                    }
-
-                    // Wait 5s, then fade in over 3s
-                    soundTimeout = setTimeout(function() {
-                        if (player) {
-                            try {
-                                player.unMute();
-                                fadeInVolume(100, 3000);
-                                statusText.textContent = '✦ now playing ✦';
-                            } catch (err) {
-                                console.warn('Fade-in failed:', err);
-                            }
-                        }
-                        soundTimeout = null;
-                    }, 5000);
-
-                    isPlaying = true;
-                    playRequested = false;
-                    console.log('▶️ Play sequence started (5s silence → 3s fade).');
-
-                } catch (err) {
-                    console.warn('Play attempt failed:', err);
-                }
-            }
-
-            // ── Click overlay → start music ──
-            overlay.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (!isPlaying) {
-                    startPlaySequence();
-                }
-            });
-
-            // ── Generate wisps ──
-            (function createWisps() {
-                const container = document.getElementById('mono-bg');
-                const count = 50;
-                for (let i = 0; i < count; i++) {
-                    const wisp = document.createElement('div');
-                    wisp.className = 'wisp';
-                    const r = Math.random();
-                    if (r < 0.5) wisp.classList.add('small');
-                    else if (r < 0.85) wisp.classList.add('medium');
-                    else wisp.classList.add('large');
-                    wisp.style.left = (Math.random() * 100) + '%';
-                    wisp.style.bottom = (5 + Math.random() * 15) + '%';
-                    wisp.style.setProperty('--rise', (120 + Math.random() * 180) + 'px');
-                    wisp.style.setProperty('--drift', ((Math.random() - 0.5) * 100) + 'px');
-                    wisp.style.setProperty('--delay', (Math.random() * 5.0).toFixed(2) + 's');
-                    container.appendChild(wisp);
-                }
-                for (let i = 0; i < 6; i++) {
-                    const big = document.createElement('div');
-                    big.className = 'wisp large';
-                    big.style.left = (Math.random() * 100) + '%';
-                    big.style.bottom = (5 + Math.random() * 12) + '%';
-                    big.style.setProperty('--rise', (160 + Math.random() * 200) + 'px');
-                    big.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
-                    big.style.setProperty('--delay', (Math.random() * 7.0).toFixed(2) + 's');
-                    container.appendChild(big);
-                }
-            })();
-
-            console.log('🌙 Music Box ready – click the overlay to start.');
-
-        })();
-    </script>
-
-</body>
-</html>
+    console.log('🌙 Music Box ready – scroll or click to start.');
+  })();
+</script>
