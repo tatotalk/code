@@ -3,131 +3,203 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spotify Autoplay</title>
+    <title>Autoplay YouTube Video with Sound</title>
     <style>
-        /* Minimal, dark-themed container */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            min-height: 100vh;
+            background: #0f0f0f;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #121212;
+            min-height: 100vh;
             font-family: system-ui, -apple-system, sans-serif;
-            padding: 20px;
         }
-        .player-wrapper {
-            width: 100%;
-            max-width: 680px;
-            background: #1e1e1e;
-            border-radius: 16px;
+        .container {
+            background: #1a1a1a;
             padding: 24px;
+            border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            max-width: 900px;
+            width: 100%;
+            margin: 20px;
         }
-        .player-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 18px;
-            color: #fff;
-        }
-        .spotify-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #1db954;
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .spotify-badge svg {
-            width: 24px;
-            height: 24px;
-            fill: #1db954;
-        }
-        .status-note {
-            margin-left: auto;
-            font-size: 12px;
-            color: #a7a7a7;
-            background: #2a2a2a;
-            padding: 4px 14px;
-            border-radius: 20px;
-        }
-        .iframe-container {
-            border-radius: 12px;
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
             overflow: hidden;
+            border-radius: 12px;
             background: #000;
         }
-        .iframe-container iframe {
-            display: block;
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 352px;
-            border: none;
-            border-radius: 12px;
+            height: 100%;
+            border: 0;
         }
-        .player-footer {
-            margin-top: 14px;
+        .controls {
             display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #6a6a6a;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
-        .player-footer a {
-            color: #6a6a6a;
+        .btn {
+            background: #3ea6ff;
+            color: #0f0f0f;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: #65b8ff;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-secondary {
+            background: #3a3a3a;
+            color: #eee;
+        }
+        .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+        .info {
+            color: #aaa;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .info a {
+            color: #3ea6ff;
             text-decoration: none;
-            border-bottom: 1px dotted transparent;
-            transition: 0.2s;
         }
-        .player-footer a:hover {
-            color: #1db954;
-            border-bottom-color: #1db954;
-        }
-        @media (max-width: 560px) {
-            .player-wrapper { padding: 16px; }
-            .iframe-container iframe { height: 280px; }
-        }
-        @media (max-width: 400px) {
-            .iframe-container iframe { height: 220px; }
+        .info a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="player-wrapper">
-        <!-- header -->
-        <div class="player-header">
-            <span class="spotify-badge">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.36-.66.48-1.02.24-2.82-1.74-6.36-2.1-10.56-1.14-.42.12-.78-.12-.9-.54-.12-.42.12-.78.54-.9 4.56-1.02 8.46-.6 11.58 1.32.36.18.48.66.24 1.02zm1.44-3.3c-.3.42-.78.6-1.2.36-3.24-1.98-8.16-2.52-11.94-1.38-.48.12-1.02-.18-1.14-.66-.12-.48.18-1.02.66-1.14 4.26-1.26 9.6-.72 13.26 1.5.42.24.6.78.36 1.2zm.12-3.42c-.36.42-1.02.6-1.44.3-3.54-2.16-9.12-2.34-12.54-1.26-.54.18-1.14-.18-1.32-.72-.18-.54.18-1.14.72-1.32 4.02-1.26 10.14-1.02 14.22 1.38.42.24.6.84.36 1.32z"/>
-                </svg>
-                Spotify
-            </span>
-            <span class="status-note">⏵ autoplay requested</span>
-        </div>
 
-        <!-- iframe with autoplay=1 -->
-        <div class="iframe-container">
-            <iframe
-                id="spotifyPlayer"
-                src="https://open.spotify.com/embed/track/7mWZIQTibWOpop4BNCGkCF?utm_source=generator&si=88667ac239a34e96&autoplay=1"
-                width="100%"
-                height="352"
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                allowfullscreen
-                loading="lazy"
-            ></iframe>
-        </div>
+<div class="container">
+    <div class="video-wrapper">
+        <!--
+            The video ID is extracted from the URL:
+            https://www.youtube.com/watch?v=dPD4mSuZmvU
 
-        <!-- footer -->
-        <div class="player-footer">
-            <span>🎵 <span style="color:#aaa;">Now playing</span> · Spotify Embed</span>
-            <a href="https://open.spotify.com/track/7mWZIQTibWOpop4BNCGkCF" target="_blank" rel="noopener">
-                open in Spotify →
-            </a>
-        </div>
+            autoplay=1       → start playing as soon as the player is ready
+            mute=1           → required by most browsers for autoplay to work
+            enablejsapi=1    → allows JavaScript control via the YouTube IFrame API
+            origin=...       → helps with security / API communication
+        -->
+        <iframe
+            id="ytplayer"
+            src="https://www.youtube.com/embed/dPD4mSuZmvU?autoplay=1&mute=1&enablejsapi=1&origin=<?= $_SERVER['HTTP_HOST'] ?? 'localhost' ?>"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+        ></iframe>
     </div>
+
+    <div class="controls">
+        <button class="btn" id="unmuteBtn">🔊 Unmute &amp; Play with Sound</button>
+        <button class="btn btn-secondary" id="reloadBtn">⟳ Reload &amp; Autoplay</button>
+    </div>
+
+    <div class="info">
+        ⚠️ <strong>Note:</strong> Browsers block autoplay with sound until you interact with the page.
+        Click the <strong>"Unmute &amp; Play with Sound"</strong> button or anywhere on the page to enable audio.
+        <br />
+        <a href="https://www.youtube.com/watch?v=dPD4mSuZmvU" target="_blank">Watch on YouTube ↗</a>
+    </div>
+</div>
+
+<script>
+    // Load the YouTube IFrame Player API asynchronously
+    let player;
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('ytplayer', {
+            events: {
+                onReady: onPlayerReady,
+                onStateChange: onPlayerStateChange,
+            },
+        });
+    }
+
+    function onPlayerReady(event) {
+        console.log('Player ready – attempting autoplay (will be muted).');
+        // The video should already be playing because of autoplay=1 & mute=1.
+        // But if it's not, we try to play it.
+        event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+        // If the video ends, we could loop it, but we'll leave that out.
+        console.log('Player state changed:', event.data);
+    }
+
+    // --- Unmute logic ---
+
+    function unmuteAndPlay() {
+        if (player && typeof player.unMute === 'function') {
+            player.unMute();
+            player.playVideo();
+            console.log('Unmuted and playing with sound.');
+            document.getElementById('unmuteBtn').textContent = '🔊 Sound is ON';
+            document.getElementById('unmuteBtn').style.opacity = '0.7';
+            document.getElementById('unmuteBtn').style.cursor = 'default';
+        } else {
+            console.warn('Player not ready yet – try again.');
+        }
+    }
+
+    // Button click to unmute
+    document.getElementById('unmuteBtn').addEventListener('click', unmuteAndPlay);
+
+    // Also unmute when user clicks anywhere on the page (to satisfy the "user gesture" requirement)
+    document.addEventListener('click', function firstClickHandler() {
+        // Only run once
+        document.removeEventListener('click', firstClickHandler);
+        // Small delay to let the click event propagate, then unmute
+        setTimeout(unmuteAndPlay, 300);
+    });
+
+    // Reload button: refresh the iframe src to restart autoplay
+    document.getElementById('reloadBtn').addEventListener('click', function () {
+        const iframe = document.getElementById('ytplayer');
+        const currentSrc = iframe.src;
+        // Remove any existing timestamp to force a fresh load
+        if (currentSrc.includes('&reload=')) {
+            iframe.src = currentSrc.replace(/&reload=\d+/, '') + '&reload=' + Date.now();
+        } else {
+            iframe.src = currentSrc + '&reload=' + Date.now();
+        }
+        // Reset the unmute button text
+        document.getElementById('unmuteBtn').textContent = '🔊 Unmute & Play with Sound';
+        document.getElementById('unmuteBtn').style.opacity = '1';
+        document.getElementById('unmuteBtn').style.cursor = 'pointer';
+        console.log('Reloaded iframe.');
+    });
+
+    // --- Load the YouTube IFrame API ---
+    // The API calls onYouTubeIframeAPIReady when it's loaded.
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+</script>
+
 </body>
 </html>
