@@ -47,6 +47,7 @@
       position: relative;
       z-index: 1;
     }
+    .hidden { display: none !important; }
 
     /* --- AGE GATE MODAL --- */
     #ageGate {
@@ -67,7 +68,6 @@
       text-align: center;
       padding: 2rem;
     }
-    #ageGate.hidden { display: none; }
     #ageGate h1 {
       font-family: 'Yusei Magic', sans-serif;
       font-size: 4.5rem;
@@ -225,16 +225,6 @@
       0% { opacity: 0; transform: scale(0.95) rotate(-1deg); }
       100% { opacity: 1; transform: scale(1) rotate(0deg); }
     }
-    .page-locked {
-      display: none;
-      text-align: center;
-      padding: 4rem 2rem;
-      background: #111;
-      border: 6px solid #ff007f;
-      box-shadow: inset 0 0 100px #ff007f20;
-    }
-    .page-locked h2 { font-size: 3rem; color: #ff007f; text-shadow: 0 0 40px #ff007f; }
-    .page-locked p { font-size: 1.5rem; color: #ffe600; }
 
     /* --- CARDS --- */
     .card {
@@ -276,7 +266,7 @@
     .card .lock-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       backdrop-filter: blur(4px);
       display: flex;
       justify-content: center;
@@ -343,6 +333,10 @@
       border-color: #ff007f;
       box-shadow: 0 0 30px #ff007f40;
     }
+    input:disabled, textarea:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
     .btn {
       font-family: 'Yusei Magic', sans-serif;
@@ -363,6 +357,11 @@
       color: #000;
       border-color: #000;
       box-shadow: 0 0 40px #ffe600;
+    }
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none !important;
     }
     .btn-secondary {
       background: #333;
@@ -530,7 +529,6 @@
       .logo { text-align: center; }
       #ageGate h1 { font-size: 2.5rem; }
     }
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -539,12 +537,12 @@
 <div id="ageGate">
   <h1>🔞 21+</h1>
   <p>⚠️ MATURE MANGA CLUB ⚠️</p>
-  <button class="btn-age" id="ageConfirm">I AM 21+ • ENTER</button>
-  <button class="btn-no" id="ageDeny">I am under 21 (Leave)</button>
+  <button type="button" class="btn-age" id="ageConfirm">I AM 21+ • ENTER</button>
+  <button type="button" class="btn-no" id="ageDeny">I am under 21 (Leave)</button>
 </div>
 
 <!-- ========== APP ========== -->
-<div class="app" id="mainApp">
+<div class="app hidden" id="mainApp">
 
   <!-- HEADER -->
   <header>
@@ -1096,11 +1094,11 @@
     });
   });
 
-  // --- AGE GATE ---
+  // --- AGE GATE (FIXED) ---
   document.getElementById('ageConfirm').addEventListener('click', function() {
     localStorage.setItem('ageVerified', 'true');
     document.getElementById('ageGate').classList.add('hidden');
-    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('mainApp').classList.remove('hidden');
     renderAll();
   });
   document.getElementById('ageDeny').addEventListener('click', function() {
@@ -1110,10 +1108,11 @@
   // --- Init ---
   if (isAgeVerified()) {
     document.getElementById('ageGate').classList.add('hidden');
-    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('mainApp').classList.remove('hidden');
     renderAll();
   } else {
-    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('ageGate').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
   }
 </script>
 </body>
