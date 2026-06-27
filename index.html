@@ -1205,10 +1205,10 @@
                     digital sovereignty archives. Research. Analyze. Thrive.
                 </p>
                 <div class="hero-actions">
-                    <a href="#products" class="btn-primary">
+                    <a href="#" class="btn-primary" data-pw-trigger="true">
                         <i class="fa-solid fa-store"></i> Explore Vaults
                     </a>
-                    <a href="#cta" class="btn-secondary">
+                    <a href="#" class="btn-secondary" data-pw-trigger="true">
                         <i class="fa-regular fa-circle-play"></i> See Demo
                     </a>
                 </div>
@@ -1278,25 +1278,25 @@
                 </p>
             </div>
             <div class="categories-grid">
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" data-pw-trigger="true">
                     <img class="cat-bg" src="https://64.media.tumblr.com/240d8320d7102df7be76009bb10f6b03/be1904b3a1a6f897-66/s1280x1920/cea21db2c630009f35288b59024dcd152fe88213.pnj" alt="" loading="lazy" />
                     <span class="cat-icon">🏛️</span>
                     <h4>Sovereign Digital Infra</h4>
                     <p>Tech · Ethics · Bypassing</p>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" data-pw-trigger="true">
                     <img class="cat-bg" src="https://64.media.tumblr.com/2bdb5a3c37af0e2634e904de8543501e/be1904b3a1a6f897-00/s2048x3072/f797e8e180427606e52d12fae3d1b9aa127f95b6.jpg" alt="" loading="lazy" />
                     <span class="cat-icon">🤖</span>
                     <h4>AI Beauty Pageant</h4>
                     <p>Results · Voting · Themes</p>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" data-pw-trigger="true">
                     <img class="cat-bg" src="https://64.media.tumblr.com/b49290c754b987245929954a349ccc9c/be1904b3a1a6f897-a7/s2048x3072/c5cce7a7a7396389dace5e586f9622b76ee9416d.jpg" alt="" loading="lazy" />
                     <span class="cat-icon">🎭</span>
                     <h4>Urban Culture &amp; Dance</h4>
                     <p>Street trends · Viral moves</p>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" data-pw-trigger="true">
                     <img class="cat-bg" src="https://64.media.tumblr.com/4b0f154df822c2f22db9fcfbe6ffd6b7/be1904b3a1a6f897-1a/s2048x3072/0d1793afbad96eab94fbfc56425c02e8a62012aa.jpg" alt="" loading="lazy" />
                     <span class="cat-icon">🧘</span>
                     <h4>Wellness Industry Reports</h4>
@@ -1315,7 +1315,7 @@
                     <h2 class="section-title">Choose Your <span class="gradient-blue-pink">Tier</span></h2>
                     <p class="section-sub">From Observer to Insider — unlock the full spectrum.</p>
                 </div>
-                <a href="#" class="btn-secondary" style="padding:10px 24px;font-size:0.85rem;">
+                <a href="#" class="btn-secondary" style="padding:10px 24px;font-size:0.85rem;" data-pw-trigger="true">
                     View All <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>
@@ -1340,7 +1340,7 @@
                     </div>
                     <div class="card-footer">
                         <span class="price">$5 <small>/mo</small></span>
-                        <a href="#" class="btn-card">Get Access</a>
+                        <a href="#" class="btn-card" data-pw-trigger="true">Get Access</a>
                     </div>
                 </div>
 
@@ -1363,7 +1363,7 @@
                     </div>
                     <div class="card-footer">
                         <span class="price">$15 <small>/mo</small></span>
-                        <a href="#" class="btn-card primary-btn">Join Now</a>
+                        <a href="#" class="btn-card primary-btn" data-pw-trigger="true">Join Now</a>
                     </div>
                 </div>
 
@@ -1386,7 +1386,7 @@
                     </div>
                     <div class="card-footer">
                         <span class="price">$49 <small>/mo</small></span>
-                        <a href="#" class="btn-card primary-btn">Unlock Vault</a>
+                        <a href="#" class="btn-card primary-btn" data-pw-trigger="true">Unlock Vault</a>
                     </div>
                 </div>
             </div>
@@ -1458,7 +1458,7 @@
             <span class="section-label gold"><i class="fa-regular fa-gem" style="margin-right:6px;"></i> Join the Empire</span>
             <h2>Ready to unlock <span>the full experience</span>?</h2>
             <p>Subscribe now and get instant access to the entire ecosystem — from Observer to Insider.</p>
-            <a href="#" class="btn-primary gold">
+            <a href="#" class="btn-primary gold" data-pw-trigger="true">
                 <i class="fa-solid fa-rocket"></i> Start Your Journey
             </a>
         </div>
@@ -3773,9 +3773,33 @@
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', function() {
                         window.PatreonWidget = init();
+                        // ── attach triggers for all data-pw-trigger buttons ──
+                        document.querySelectorAll('[data-pw-trigger="true"]').forEach(el => {
+                            el.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                if (window.PatreonWidget) {
+                                    window.PatreonWidget.open();
+                                } else {
+                                    console.warn('Patreon+ widget not ready');
+                                }
+                            });
+                        });
                     });
                 } else {
                     window.PatreonWidget = init();
+                    // attach triggers immediately
+                    setTimeout(() => {
+                        document.querySelectorAll('[data-pw-trigger="true"]').forEach(el => {
+                            el.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                if (window.PatreonWidget) {
+                                    window.PatreonWidget.open();
+                                } else {
+                                    console.warn('Patreon+ widget not ready');
+                                }
+                            });
+                        });
+                    }, 100);
                 }
                 // also expose the init function for manual use
                 window.initPatreonWidget = init;
